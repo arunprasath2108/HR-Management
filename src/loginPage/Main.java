@@ -93,7 +93,6 @@ public class Main
 			else 
 			{
 				Utils.printLoginFailMessage();
-				return;
 			}
 		}
 		
@@ -116,7 +115,7 @@ public class Main
 		
 		if(employeeRole.equalsIgnoreCase("HR"))
 		{
-			HR_View hr = new HR_View();
+			HR_UI hr = new HR_UI();
 			hr.listEmployeeMenu();
 		}
 		

@@ -5,7 +5,7 @@ import java.util.Map.Entry;
 import dbController.*;
 
 
-public class HR_View 
+public class HR_UI 
 {
 	
 	//creating object for HR_Controller class

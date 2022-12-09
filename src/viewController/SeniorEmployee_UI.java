@@ -1,7 +1,7 @@
 package viewController;
 
 
-public class SeniorEmployee_View
+public class SeniorEmployee_UI
 {
 	
 	
