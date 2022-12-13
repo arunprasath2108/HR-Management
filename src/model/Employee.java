@@ -40,50 +40,25 @@ public class Employee
 		
 		
 		
-		
-		public void setemployeeID(int id)
-		{
-			employeeID = id;
-		}
-		
+	
 		public int getemployeeID()
 		{
 			return employeeID;
 		}
-		
-		public void setemployeeName(String name)
-		{
-			employeeName = name;
-		}
-		
+
 		public String getemployeeName()
 		{
 			return employeeName;
 		}
-		
-		public void setemployeeRole(String role)
-		{
-			this.role = role;
-		}
-		
+	
 		public String getemployeeRole()
 		{
 			return role;
 		}
-		
-		public void setEmployeeTeamName(int teamID)
-		{
-			employeeTeamID = teamID;
-		}
-		
+
 		public int getEmployeeTeamName()
 		{
 			return employeeTeamID;
-		}
-		
-		public void setReportingToID(int id)
-		{
-			reportingToID = id;
 		}
 		
 		public int getReportingToID()
@@ -91,19 +66,9 @@ public class Employee
 			return reportingToID;
 		}
 		
-		public void setEmployeeWorkLocation(String location)
-		{
-			employeeWorkLocation = location;
-		}
-		
 		public String getEmployeeWorkLocation()
 		{
 			return employeeWorkLocation;
-		}
-		
-		public void setDateOfJoining(String doj)
-		{
-			dateOfJoining = doj;
 		}
 		
 		public String getDateOfJoining()
@@ -111,19 +76,9 @@ public class Employee
 			return dateOfJoining;
 		}
 		
-		public void setCompanyMailId(String mailID)
-		{
-			companyMailId = mailID;
-		}
-		
 		public String getCompanyMailId()
 		{
 			return companyMailId;
-		}
-		
-		public void setGender(String gender)
-		{
-			this.gender = gender;
 		}
 		
 		public String getGender()
@@ -180,6 +135,58 @@ public class Employee
 		{
 			return education;
 		}
+		
+		
+		
+//		public void setemployeeID(int id)
+//		{
+//			employeeID = id;
+//		}
+		
+		
+//		public void setemployeeName(String name)
+//		{
+//			employeeName = name;
+//		}
+		
+//		public void setemployeeRole(String role)
+//		{
+//			this.role = role;
+//		}
+		
+//		public void setEmployeeTeamName(int teamID)
+//		{
+//			employeeTeamID = teamID;
+//		}
+		
+//		public void setReportingToID(int id)
+//		{
+//			reportingToID = id;
+//		}
+		
+//		public void setEmployeeWorkLocation(String location)
+//		{
+//			employeeWorkLocation = location;
+//		}
+		
+//		public void setDateOfJoining(String doj)
+//		{
+//			dateOfJoining = doj;
+//		}
+		
+//		public void setCompanyMailId(String mailID)
+//		{
+//			companyMailId = mailID;
+//		}
+		
+//		public void setGender(String gender)
+//		{
+//			this.gender = gender;
+//		}
+		
+		
+		
+		
 
 
 }

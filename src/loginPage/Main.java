@@ -2,6 +2,8 @@ package loginPage;
 
 import java.util.*;
 import dbController.*;
+import utils.EmployeeValidation;
+import utils.Utils;
 import viewController.*;
 
 public class Main 
@@ -14,24 +16,18 @@ public class Main
 	public static void main(String[] args) 
 	{
 		
-		createTables();
+		//create tables in Database
+		DBUtils.createTables();
+		
+		//main page
 		loginPage();
+		
+		//closes the connection object when not in use
+		DBConnector.closeConnection();
 		
 	} //main method
 	
-	
-	//method for creating all tables
-	public static void createTables()
-	{
-		//db.createDatabase();
-		//db.createRoleTable();
-		//db.createTeamsTable();
-		//db.createWorkLocationTable();
-		//db.createEmployeeTable();
-		//db.insertLoctions();
-		//db.createPersonalInfo();
-		//db.createWorkExperience();
-	}
+
 	
 	public static void loginPage()
 	{
@@ -110,25 +106,25 @@ public class Main
 	
 		Utils.printWelcomeMessage(userID);
 
-		int roleID = DB_Utils.getRoleID(userID);
-		String employeeRole = DB_Utils.getRoleName(roleID);
+		int roleID = RoleDBController.getRoleID(userID);
+		String employeeRole = RoleDBController.getRoleName(roleID);
 		
 		if(employeeRole.equalsIgnoreCase("HR"))
 		{
-			HR_UI hr = new HR_UI();
+			HRViewController hr = new HRViewController();
 			hr.listEmployeeMenu();
 		}
 		
 		else if(employeeRole.equalsIgnoreCase("PT"))
 		{
 //			Employee_View employee = new Employee_View();
-//			System.out.println(" pt login");
+			System.out.println(" pt login");
 		}
 		
 		else
 		{
 //			SeniorEmployee_View seniorEmployee = new SeniorEmployee_View();
-//			System.out.println(" senior employee login");
+			System.out.println(" senior employee login");
 		}
 	}
 

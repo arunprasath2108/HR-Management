@@ -2,20 +2,18 @@ package dbController;
 
 import java.sql.*;
 
-public class DB_Connection 
+public class DBConnector 
 {
 	
-	private static final String DATABASE_NAME = "HR_Management";
-	
-	public static DB_Connection connector = null;
-	
-	Connection connection;
-	
+	 public static DBConnector connector = null;
+
+	 private Connection connection;
+
 	//constructor
-	DB_Connection()
+	private DBConnector()
 	{
 		
-		String url = "jdbc:postgresql://localHost:5432/"+DATABASE_NAME;
+		String url = "jdbc:postgresql://localHost:5432/"+DBConstant.DATABASE_NAME;
 		String userName = "postgres";
 		String pass = "12345";
 		
@@ -25,6 +23,7 @@ public class DB_Connection
 			{
 				Class.forName("org.postgresql.Driver");
 				connection = DriverManager.getConnection(url, userName, pass);
+
 			}
 			catch (ClassNotFoundException e) 
 			{
@@ -43,7 +42,7 @@ public class DB_Connection
 	{
 		if(connector == null)
 		{
-			connector = new DB_Connection();
+			connector = new DBConnector();
 		}
 		
 		return connector.connection;
@@ -61,4 +60,5 @@ public class DB_Connection
 			System.out.println("  Can't Close the Connection");
 		}
 	}
+	
 }
