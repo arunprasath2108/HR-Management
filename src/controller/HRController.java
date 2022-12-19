@@ -607,7 +607,7 @@ public class HRController
 		}
 		else if(userInput == 0)
 		{
-			hrView.canEditEmployee(userInput);  //invalid input
+			hrView.canEditEmployee(userInput);  //Invalid Input.
 			inputLimit++;
 			
 		}
