@@ -1,9 +1,9 @@
 package viewController;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
-import java.util.Map.Entry;
+
+import controller.HRController;
 import dbController.*;
 import model.*;
 import utils.*;
@@ -12,36 +12,11 @@ import utils.*;
 public class HRViewController 
 {
 	
-	//creating object for HR_Controller class
-	 HRDBController hrController = new HRDBController();
-	
-	 private static final int ADD_TEAM = 1;
-	 private static final int ADD_EMPLOYEE = 2;
-	 private static final int ADD_ROLE = 3;
-	 private static final int ADD_LOCATIONS = 4;
-	 private static final int VIEW_TEAM_INFO = 5;
-	 private static final int EDIT_EMPLOYEE_INFO = 6;
-	 private static final int REQUESTS = 7;
-	 private static final int LOG_OUT = 8;
-	 
-	 //Gender Input
-	 private static final int MALE = 1;
-	 private static final int FEMALE = 3;
-	 private static final int OTHERS = 2;
+	//checks the input, only 3 wrong inputs should be allowed
+	int inputLimit = 0;
 
-
-	 
-	 //stop the method for wrong input more than 3 times
-	 int inputLimit = 0;
 	
-	 
-	public void listEmployeeMenu()
-	{
-			displayHrMenu();
-			getInputFromHR();
-	}
-	
-	private void displayHrMenu()
+	public void displayHrMenu()
 	{
 
 		 System.out.println(" Features : ");
@@ -60,270 +35,245 @@ public class HRViewController
 
 	}
 	
-	private void getInputFromHR()
+	
+	public int getInputFromHR()
 	{
 		
-		if(inputLimit == 3)
+		try
 		{
-			inputLimit = 0;
-			return;
+			int input = Utils.getIntInput();
+			return input;
 		}
-		
-		 Utils.printEnterOption();
-
-		 try
-		 {
-			 int userInput = Utils.getIntInput();
-			 
-			 switch(userInput)
-			 {
-			 
-				 case ADD_TEAM :
-					 addTeam();
-					 break;
-					 
-				 case ADD_EMPLOYEE :
-					 addEmployee();
-					 break;
-					 
-				 case ADD_ROLE :
-					 addRole();
-					 break;
-					 
-				 case ADD_LOCATIONS :
-					 addWorkLocations();
-					 break;
-					 
-				 case VIEW_TEAM_INFO :
-					 break;
-					 
-				 case EDIT_EMPLOYEE_INFO :
-					 break;
-					 
-				 case REQUESTS :
-					 break;
-					 
-				 case LOG_OUT :
-					 return;
-					 
-				 default :
-					 inputLimit++;
-					 Utils.printInvalidInputMessage();
-					 listEmployeeMenu();
-					 return;
-			 }
-		 }
-		 catch(InputMismatchException e)
-		 {
-			 inputLimit++;
-			 Utils.printInvalidInputMessage();
-			 Utils.scanner.nextLine();
-			 listEmployeeMenu();
-			 return;
-		 }
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
 	}
-
-	private void addTeam()
+	
+	public String getTeamName()
 	{
 		
 		System.out.println(" Enter Team Name ");
-		String teamName = Utils.getStringInput();
-		Team team = new Team(teamName);
+		String name = Utils.getStringInput().toUpperCase();
+		return name;		
+	}
+	
+	
+	public void isTeamAddedSuccessful(int value, String teamName)
+	{
 		
-		if(TeamDBController.addTeam(team))
+		if(value == 1)
 		{
 			System.out.println("    ~ Successfully Added a Team -> ["+teamName+"]");
 			Utils.printSpace();
 		}
 		
-		else
+		else if(value == 2)
 		{
-			System.out.println("  Team Name ["+teamName+"] already exists!!");
+			System.out.println("  Team ["+teamName+"] already exists!!");
 			Utils.printTryAgainMessage();
 		}
+		else
+		{
+			System.out.println("   * Please, Enter a valid Team Name to Add \n");
+			System.out.println("   * Name should be minimum of 2 characters & start with alphabet.\n");
+		}
+		
 	
 	}
 
 	
-	private void addRole()
+	public String getRoleName()
 	{
 		
-		//check if atleast one role is present in Table
-		if(RoleDBController.isRoleAvailable() == 0)
+		System.out.println(" Enter Role Name ");
+		String name = Utils.getStringInput().toUpperCase();
+		
+		if(EmployeeValidation.isInputNameValid(name))
 		{
-			return;
+			return name;
+		} 
+		else
+		{
+			inputLimit++;
+			
+			if(inputLimit == 3)
+			{
+				inputLimit = 0;
+				return null;
+			}
+			
+			System.out.println("   * Role length should be minimum of 2 characters and starts with alphabet\n");
+			return getRoleName();
+		}
+	}
+	
+	
+	public void isRoleAddedSuccessful(int value, String roleName)
+	{
+		
+		if(value == 1)
+		{
+			System.out.println("    ~ Successfully Added a Role -> ["+roleName+"]");
+			Utils.printSpace();
 		}
 		
-		System.out.println(" Enter Role Name ");
-		String roleName = Utils.getStringInput();
-		
-		int previousID = getRolePriority();
-		if(previousID == 0) { return; };
-		
-		if(RoleDBController.changeRolePriority(previousID))
+		else if(value == 2)
 		{
-			
-			previousID++;
-			Role role = new Role(roleName, previousID);
-			
-			if(RoleDBController.addRole(role))
-			{
-				System.out.println("    ~ Successfully Added a Role -> ["+roleName+"]\n");
-			}
-			
-			else
-			{
-				System.out.println("  Failed to add new Role!");
-				Utils.printTryAgainMessage();
-			}
+			System.out.println("  Role ["+roleName+"] already exists!!");
+			Utils.printTryAgainMessage();
+		}
+		else if(value == 3)
+		{
+			System.out.println("   * Please, Enter a valid Role Name to Add \n");
+			System.out.println("   * Name should be minimum of 2 characters & start with alphabet.\n");
 		}
 		else
 		{
-			System.out.println( "  Can't Add Role, Error occured in changing Priority \n");
+			System.out.println("  Failed to Add Role\n");
 		}
 		
+	
 	}
-
-	private void displayRolePriority()
+	
+	public void isLocationAddedSuccessful(int value, String locationName)
 	{
 		
-		ArrayList<Role> roles = RoleDBController.listRole();
+		if(value == 1)
+		{
+			System.out.println("    ~ Successfully Added a Location -> ["+locationName+"]");
+			Utils.printSpace();
+		}
+		
+		else if(value == 2)
+		{
+			System.out.println("  Location ["+locationName+"] already exists!!");
+			Utils.printTryAgainMessage();
+		}
+		else if(value == 3)
+		{
+			System.out.println("   * Please, Enter a valid Location Name to Add \n");
+			System.out.println("   * Name should contains a minimal characters & start with alphabet.\n");
+		}
+		else
+		{
+			System.out.println("  Failed to add new Location\n");
+		}
+		
+	
+	}
+
+	
+	public void displayRolePriority(ArrayList<Role> roles)
+	{
+		
 		Utils.printLine();
 		System.out.println("  PRIORITY ID     ROLE NAME ");
 		Utils.printLine();
 		
 		for(Role role : roles)
 		{
-			System.out.printf("  %5s   -     %-10s   \n ",role.getRolePriority(),role.getRoleName());
+			System.out.printf("  %5s   -     %-10s   \n",role.getRolePriority(),role.getRoleName());
 		}
 		
 		Utils.printLine();
 		Utils.printSpace();
 	}
 	
-	private int getRolePriority()
+	
+	public int getRolePriority()
 	{
 		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return 0;
-		}
-		
-		displayRolePriority();
 		System.out.println("  NOTE : Select Priority ID to add Next to the selected Role priority \n");
 		
 		try
 		{
 			int userInput = Utils.getIntInput();
-			
-			if(EmployeeValidation.isRolePriorityPresent(userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				Utils.printInvalidInputMessage();
-				return getRolePriority();
-			}
-			
+			return userInput;
 		}
-		
 		catch(InputMismatchException e)
 		{
 			inputLimit++;
 			Utils.printInvalidInputMessage();
 			Utils.scanner.nextLine();
+			
+			if(inputLimit == 3)
+			{
+				inputLimit = 0;
+				return 0;
+			}
 			return getRolePriority();
 		}
-		
-		
 	}
 	
 	
-	private void addWorkLocations()
+	public String getLocationName()
 	{
 		
-		System.out.println(" Enter New Location Name ");
-		String locationName = Utils.getStringInput();
+		System.out.println(" Enter Location Name to add :");
+		String locationName = Utils.getStringInput().toUpperCase();
+		return locationName;
+	}
+	
+	
+	public void isEmployeeAddedSuccessful(boolean isAdded)
+	{
 		
-		if(HRDBController.addWorkLocation(locationName))
+		if(isAdded)
 		{
-			System.out.println("    ~ Successfully Added a new Work Location -> ["+locationName+"]\n");
+			System.out.println("    ~ Employee Added Successfully\n");
 		}
-		
 		else
 		{
-			System.out.println("  Failed to add new Location!");
-			Utils.printTryAgainMessage();
+			Utils.printFailedToAddEmployee();
 		}
+		
 	}
-
 	
-	private void addEmployee()
+	public void displayRoles(ArrayList<Role> roles)
 	{
 		
-		if(!EmployeeValidation.isTeamsAvailable())
+		if(RoleDBController.isRoleAvailable() >= 2)   //check if atleast two role is present to display
 		{
-			System.out.println("  No Team is Available!\n");
-			return;
-		}
-
-		int teamID = getTeamID();
-		if(teamID == 0) { return; };  //exit the method when the Team ID is null
-		
-		int roleID = getEmployeeRole();
-		if(roleID == 0) { return; }; 
-		
-		String name = getNameInput();
-		if(name.isEmpty()) { return; };
-		
-		String gender = getGenderInput();
-		if(gender.isEmpty()) { return; };
-		
-		int rolePriority = RoleDBController.getRolePriority(roleID);
-		
-		int reportingID = getReportingID(teamID, rolePriority);
-		if(reportingID == 0) { return; };
-		
-		//doj
-//		String doj = getDateInput();
-//		System.out.println(doj);
-//		if(doj.isEmpty()) { return; };
-		
-		int workLocation = getWorkLocationID();
-		if(workLocation == 0) { return; };
-		
-		//trim the name for generating official mail id
-		String nameAfterTrim = getNameWithoutSpace(name);
-		
-		String newMail = nameAfterTrim.toLowerCase()+"@zoho.in";
-		
-		if(EmployeeValidation.isOfficialMailExists(newMail))
-		{
-			newMail = "";
-			System.out.println("  Mail Id Already Exists  -->  " +name+"@zoho.in \n");
-			newMail = getEmailID();
+			Utils.printLine();
+			System.out.println("  ROLE ID    ROLE NAME ");
+			Utils.printLine();
 			
-			if(newMail.isEmpty())
-			{ return ; };
+			for(Role role : roles)
+			{
+					System.out.printf("  %5s   -   %-5s\n",role.getRoleID(),role.getRoleName());
+			}
+			
+			Utils.printLine();
+			Utils.printSpace();
 		}
-		
-		//Employee employee = new Employee( id, name, roleID, reportingID, teamID, newMail, doj, workLocation, gender);
-
+		else
+		{
+			System.out.println("  No Role is Available to display!!\n");
+		}
+			
 	}
 	
-	
-	private String getNameInput()
+	public int getRoleID()
 	{
 		
-		if(inputLimit == 3 )
-		{
-			inputLimit = 0;
-			return "";
-		}
+		System.out.println(" Select Role ID to proceed : \n");
 		
+		try
+		{
+			int userInput = Utils.getIntInput();
+			return userInput;
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
+	}
+	
+	public String getName()
+	{
 		Utils.printSpace();
 		System.out.println(" Enter User Name : ");
 		Utils.printSpace();
@@ -332,185 +282,41 @@ public class HRViewController
 		System.out.println("   * It should not have Numberic values and does not end with [.] period ");
 		Utils.printSpace();
 		
-		
 		String name = Utils.getStringInput();
-		Utils.printSpace();
-		
-		if(EmployeeValidation.isNameValid(name))
-		{
-			return name;
-		}
-		else
-		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			return getNameInput();
-		}
-		
-	}
-
-	private void listTeamName()
-	{
-		
-		ArrayList<Team> teams = TeamDBController.listTeam();
-		Utils.printLine();
-		System.out.println("  TEAM ID      TEAM NAME ");
-		Utils.printLine();
-		
-		for(Team team : teams)
-		{
-			System.out.printf("   %-2s     -     %-10s \n ",team.getTeamID(),team.getTeamName());
-		}
-		
-		Utils.printLine();
-		Utils.printSpace();
+		return name;
 	}
 	
-	
-	private int getTeamID()
+	public int getGenderInput()
 	{
 		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return 0;
-		}
-		
-		listTeamName();
-		System.out.println(" Select TEAM ID to proceed : \n");
+		System.out.println(" Choose Gender :");
+		Utils.printSpace();
+		System.out.println(" 1. MALE.");
+		System.out.println(" 2. FEMALE.");
+		System.out.println(" 3. Others.");
 		
 		try
 		{
 			int userInput = Utils.getIntInput();
-			
-			if(EmployeeValidation.isTeamIdPresent(userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				return getTeamID();
-			}
+			return userInput;
 		}
-		
 		catch(InputMismatchException e)
 		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
 			Utils.scanner.nextLine();
-			return getTeamID();
-		}
-		
-	}
-	
-
-	private int getEmployeeRole()
-	{
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
 			return 0;
 		}
-		
-		displayRoles();
-		System.out.println(" Select ROLE ID to proceed : \n");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			
-			if(EmployeeValidation.isRoleIdPresent(userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				return getEmployeeRole();
-			}
-			
-		}
-		
-		catch(InputMismatchException e)
-		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();
-			return getEmployeeRole();
-		}
-		
-	}
-	
-	
-	private void displayRoles()
-	{
-		
-		ArrayList<Role> roles = RoleDBController.listRole();
-		Utils.printLine();
-		System.out.println("  ROLE ID    ROLE NAME ");
-		Utils.printLine();
-		
-		for(Role role : roles)
-		{
-			System.out.printf("  %5s   -   %-5s\n ",role.getRoleID(),role.getRoleName());
-		}
-		
-		Utils.printLine();
-		Utils.printSpace();
-		
-	}
-	
 
-	private int getReportingID(int teamId, int rolePriority)
-	{
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return 0;
-		}
-		
-		printReportingID(teamId, rolePriority);
-		System.out.println(" Select Reporting ID : \n");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			
-			if(EmployeeValidation.isEmployeePresent(userInput) && EmployeeValidation.isEmployeeInTeam(teamId, userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				return getReportingID(teamId, rolePriority);
-			}
-			
-		}
-		catch(InputMismatchException e)
-		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();
-			return getReportingID(teamId, rolePriority);
-		}
-		
 	}
-		
 	
-	private boolean printReportingID(int teamId, int rolePriority)
+	public boolean printReportingIdIfExists(ResultSet result)
 	{
-		
-		ResultSet result = EmployeeDBController.getReportingID(teamId,rolePriority);
 		
 		try 
 		{
-			
 			if(!result.next())  //return false if resultSet is Empty
 			{
+				System.out.println("  You have prefered Higher Role...\n");
+				System.out.println("  So, this Role has automatically  set default Reporting to -> CEO\n");
 				return false;
 			}
 			result.previous();
@@ -521,237 +327,223 @@ public class HRViewController
 			
 			while(result.next())
 			{
+				
 				int id = result.getInt(DBConstant.ID);
 				String name = result.getString(DBConstant.NAME);
 				String role = result.getString(DBConstant.ROLE_NAME);
 				System.out.printf("   %3s        %-12s    %-5s  \n",id, name, role);
 			}
 		} 
-		
-		catch (SQLException e) 
+		catch (SQLException e)
 		{
-			e.printStackTrace();
 			System.out.println("  Error !");
-			return false;
 		}
-		
 		Utils.printLine();
 		Utils.printSpace();
 		return true;
 	}
 	
-	
-	private int getWorkLocationID()
+	public int getReportingID()
 	{
-		
-		if(inputLimit == 3)
+		System.out.println(" Select Reporting ID : \n");
+		try
 		{
-			inputLimit = 0;
+			int userInput = Utils.getIntInput();
+			return userInput;
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
 			return 0;
 		}
 		
-		printworkLocation();
-		System.out.println(" Choose Location : \n");
+	}
+	
+	public String getJoiningDate()
+	{
+		
+		System.out.println("  Enter Employee Date of Joining : format -> [ dd/mm/yyyy ] ");
+		Utils.printSpace();
+		System.out.println("  * you can Choose Date Of Joining from a week before "+Utils.getTodayDate());
+		Utils.printSpace();
+		
+		String userInput = Utils.getStringInput();
+		return userInput;
+	}
+	
+	public int getLocationID()
+	{
+		System.out.println(" Choose Location ID: \n");
 		
 		try
 		{
 			int userInput = Utils.getIntInput();
-			
-			if(EmployeeValidation.isWorkLocationPresent(userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				Utils.printInvalidInputMessage();
-			}
+			return userInput;
 		}
-		
 		catch(InputMismatchException e)
 		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
 			Utils.scanner.nextLine();
-			return getWorkLocationID();
+			return 0;
 		}
-		
-		return 0;
 		
 	}
 	
 	
-	private void printworkLocation()
+	public void printworkLocation(ArrayList<WorkLocation> locations)
 	{
-		
-		HashMap<Integer, String> workLocations = new HashMap<>();
-		workLocations = EmployeeDBController.getWorkLocation();
-		
+
 		Utils.printLine();
 		System.out.println("     ID          NAME ");
 		Utils.printLine();
 		
-		for(Entry<Integer, String> locations : workLocations.entrySet())
+		for(WorkLocation location : locations)
 		{
-			int id = locations.getKey();
-			String name = locations.getValue();
-			System.out.printf("   %3s    -      %-10s  \n",id, name);
+			System.out.printf("   %3s    -      %-10s  \n",location.getLocationID(), location.getLocationName());
 		}
 		
 		Utils.printLine();
 		Utils.printSpace();
 	}
 	
-	
-
-//	private String getDateInput()
-//	{
-//		
-//		LocalDate todayDate = Utils.getTodayDate();  
-//		System.out.println(" Enter Employee Date of Joining :  [ yyyy-mm-dd ] ");
-//		Utils.printSpace();
-//		System.out.println("  * you can Choose Date Of Joining from a week before "+todayDate);
-//		Utils.printSpace();
-//		
-//		String joiningDate = Utils.getStringInput();
-//		LocalDate inputDateFormat = Utils.getDateFormat(joiningDate);
-//		System.out.println("inputDateFormat   "+inputDateFormat);
-//		
-//		if(EmployeeValidation.isDateValid(todayDate, inputDateFormat))
-//		{
-//			return joiningDate;
-//		}
-//		
-//		return "";
-//		
-////		
-////		if( EmployeeValidation.isDateValid(inputDateFormat) == true)
-////		{
-////			return joiningDate;
-////		}
-////		else
-////		{
-////			Utils.printSpace();
-////			System.out.println(" Please, Enter a Valid Date. ");
-////			Utils.printSpace();
-////			return getDateInput();
-////		}	
-//	}
-		
-
-	
-	private String getGenderInput() 
+	public String getEmailID()
 	{
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return "";
-		}
-		
-		String gender;
-		Utils.printSpace();
-		System.out.println(" Choose Gender :");
-		Utils.printSpace();
-		System.out.println(" 1. MALE.");
-		System.out.println(" 2. FEMALE.");
-		System.out.println(" 3. Others.");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			Utils.printSpace();
-			
-			switch(userInput)
-			{
-				case MALE :
-					gender = "MALE";
-					break;
-					
-				case FEMALE :
-					gender = "FEMALE";
-					break;
-					
-				case OTHERS :
-					gender = "OTHERS";
-					break;
-					
-				default :
-					inputLimit++;
-					Utils.printInvalidInputMessage();
-					return getGenderInput();
-			}
-			
-		}
-		catch(InputMismatchException e)
-		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();
-			gender = getGenderInput();
-		}
-		return gender;
-		
-	}
-	
-	private String getEmailID()
-	{
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return "";
-		}
-		
 		System.out.println("  * Add some Characters [a-z] or Digits [0-9] or Special Characters [-.&$_] ");
 		Utils.printSpace();
 		System.out.println(" Please enter USERNAME only. Domain Name will be automatically generated.");
 		Utils.printSpace();
 		String mail = Utils.getStringInput()+"@zoho.in";
-		Utils.printSpace();
 		
-		if( EmployeeValidation.isEmailValid(mail)) 
+		return mail;
+	}
+	
+	
+	public int getEmployeeID()
+	{
+		
+		System.out.println("Enter User ID : ");
+		
+		try
 		{
-			if( !EmployeeValidation.isOfficialMailExists(mail))
-			{
-				return mail;
-			}
+			int userInput = Utils.getIntInput();
+			return userInput;
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
+		
+	}
+	
+	public void canEditEmployee(int value)
+	{
+		if(value == -1)
+		{
+			System.out.println("  ~ No Employee Available to Edit. \n");
+		}
+		else if(value == 0)
+		{
+			System.out.println("  Invalid Employee ID\n");
+		}
+		else if(value == 1)
+		{
+			System.out.println("   ~ Can't edit CEO Details.\n");
+		}
+		else if(value == 2)
+		{
+			System.out.println("   ~ You can't edit your details without permissions.\n");
+		}
+	}
+
+	public void processEdit()
+	{
+		System.out.println(" 1. Confirm User profile before Edit");
+		System.out.println(" 2. Back");
+		Utils.printSpace();
+	}
+	
+	public int getConfirmForEdit()
+	{
+		
+		try
+		{
+			int userInput = Utils.getIntInput();
+			return userInput;
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
+	}
+	
+	public void displayEditMenu()
+	{
+		
+		Utils.printSpace();
+		System.out.println(" Choose an Option : ");
+		Utils.printLine();
+		System.out.println(" 1. Change Team");
+		System.out.println(" 2. Change Role");
+		System.out.println(" 3. Edit Reporting to");
+		System.out.println(" 4. Edit Work Location");
+		System.out.println(" 5. Back to Menu");
+		Utils.printSpace();
+	}
+	
+	public int getInputForEdit()
+	{
+		
+		try
+		{
+			int userInput = Utils.getIntInput();
+			return userInput;
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
+		
+	}
+	
+	public void isWorkLocationChanged(boolean isChanged)
+	{
+		if(isChanged)
+		{
+			System.out.println("   ~ Work Location changed successful \n");
 		}
 		else
 		{
-			inputLimit++;
-			Utils.printSpace();
-			System.out.println(" Invalid User Name.");
-			Utils.printSpace();
-			return getEmailID();
+			System.out.println("  Invalid Location ID\n");
 		}
-		return mail;
-		
 	}
 	
-	private String getNameWithoutSpace(String name) 
+	public void isRoleChanged(boolean isChanged)
 	{
-		
-		String[] names = name.split("\s");
-		
-		StringBuilder userName = new StringBuilder();
-		
-		for( String nameSplit : names)
+		if(isChanged)
 		{
-			userName.append(nameSplit);
+			System.out.println("   ~ Role changed successful \n");
 		}
-		
-		char[] trimName = userName.toString().toCharArray();
-		int lastIndex = trimName.length-1;
-		
-		if(trimName[lastIndex] == '.')
+		else
 		{
-			userName.deleteCharAt(lastIndex);
+			System.out.println("  Invalid Role ID\n");
 		}
-		
-		return userName.toString();
 	}
 	
+	public void isReportingIDChanged(boolean isChanged)
+	{
+		if(isChanged)
+		{
+			System.out.println("   ~ Reporting To changed successful \n");
+		}
+		else
+		{
+			System.out.println("  Invalid Reporting ID\n");
+		}
+	}
+	
+
 	
 	
 	
@@ -771,690 +563,43 @@ public class HRViewController
 	
 	
 	
-//	private void getEmployeeDetails(String teamName) 
+	
+//	//method for display higher role than the previous role
+//	public boolean displayHigherRoles(int rolePriority)
 //	{
 //		
+//		ArrayList<Role> roles = RoleDBController.listRole();
 //		
-//		Role role = displayEmployeeRoles();
-//		Utils.printSpace();
-//		
-//		String name = getNameInput();
-//		Utils.printSpace();
-//		
-//		String gender = getGenderInput();
-//		Utils.printSpace();
-//		
-//		String reportingToName = getReportingToEmployees(teamName, role);
-//		
-//		int reportingToID = displayReportingToID(teamName, reportingToName);
-//		Utils.printSpace();
-//		
-//		String doj = getDateInput();
-//		Utils.printSpace();
-//		
-//		String location = displayPreferedLocation();
-//		Utils.printSpace();
-//		
-//		Employee latestEmployee = Resource.employees.get(Resource.employees.size()-1);
-//		int employeeID = latestEmployee.getemployeeID();
-//		
-//		boolean isPresent = EmployeeValidation.isEmployeePresent(++employeeID);
-//		
-//		String nameAfterTrim = getNameWithoutSpace(name);
-//		
-//		String newMail = nameAfterTrim.toLowerCase()+"@zoho.in";
-//		
-//		boolean isMailExist = EmployeeValidation.isOfficialMailExists(newMail);
-//		Utils.printSpace();
-//		
-//		if(isMailExist == true)
+//		if(RoleDBController.higherRoleCount(rolePriority) >= 1)   //check if atleast two role is present to display
 //		{
-//			newMail = "";
-//			System.out.println("  Mail Id Already Exists  -->  " +name+"@zoho.in");
-//			Utils.printSpace();
-//
-//			newMail = getEmailID();
-//		}
-//		
-//		if (isPresent == true)
-//		{
-//			System.out.println(" User ID " + employeeID + " Already Exists.");
-//			Utils.printSpace();
-//		} 
-//		else 
-//		{
-//			Employee employee = new Employee(employeeID, name, role, teamName, reportingToName, reportingToID, location, doj, newMail, gender);
-//			Resource.employees.add(employee);
+//			Utils.printLine();
+//			System.out.println("  ROLE ID    ROLE NAME ");
+//			Utils.printLine();
 //			
-//			Resource.officialMail.add(newMail);
-		//Employee employee = new Employee(employeeID, name, role, teamName, reportingToName, reportingToID, location, doj, newMail, gender);
-//			Utils.printSpace();
-//			System.out.println("   ~ Employee added Successful ~ ");
-//			Utils.printSpace();
-//			EmployeeManager.displayProfile(employee);
-//		} 
-//		
-//	}
-
-
-
-
-//	private Role changeEmployeeRole(Role r) 
-//	{
-//		
-//		Role[] roles = Role.values();
-//		System.out.println(" Select role : ");
-//		Utils.printLine();
-//		int toCheck = 0, noAboveRole = 0;
-//
-//		for (Role role : roles)
-//		{
-//			if(Role.CEO != role && Role.HR != role && r.getValue() > role.getValue())
+//			for(Role role : roles)
 //			{
-//				noAboveRole = 1;
-//				System.out.println(role.getValue() + " - " + role);
-//			}
-//		}
-//
-//		Utils.printSpace();
-//		Utils.printSpace();
-//		
-//		if(noAboveRole == 0)
-//		{
-//			System.out.println("   ~ \"MANAGER\" - role is the highest position.");
-//			Utils.printSpace();
-//			return r;
-//		}
-//		
-//		System.out.println(" Choose the Role :");
-//		
-//		try 
-//		{
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			for (Role role : roles)
-//			{
-//				if (userInput == role.getValue() && r.getValue() > role.getValue() && userInput != Role.HR.getValue() && userInput != Role.HR.getValue())   //&& r.getValue() > role.getValue()
+//				if(role.getRolePriority() < rolePriority &&  !role.getRoleName().equalsIgnoreCase("CEO"))
 //				{
-//					toCheck = 1;
-//					return role;
-//				}
-//			} 
-//		} 
-//		catch (InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			return changeEmployeeRole(r);
-//		}
-//		
-//		if (toCheck == 0) 
-//		{
-//			System.out.println(" Choose in this Options.");
-//			Utils.printSpace();
-//			return changeEmployeeRole(r);
-//		}
-//		return null;
-//
-//	}
-//	
-//	
-//	private String displayPreferedLocation()
-//	{
-//		
-//		int checkLocationChanged = 0;
-//		System.out.println(" Enter User Work location : ");
-//		Utils.printSpace();
-//
-//		PreferedLocation[]  location = PreferedLocation.values();
-//		
-//		for( PreferedLocation  places : location )
-//		{
-//			System.out.println(" "+places.getValue()+" - "+places);
-//			
-//		}
-//		
-//		try
-//		{
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			for( PreferedLocation  places : location )
-//			{
-//				checkLocationChanged = 1;
-//				if( places.getValue() == userInput)
-//				{
-//					
-//					return places.toString();
-//				}
-//			}
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			return displayPreferedLocation();
-//		}
-//		
-//		if( checkLocationChanged == 1)
-//		{
-//			Utils.printInvalidInputMessage();
-//			return displayPreferedLocation();
-//		}
-//		return null;
-//	}
-//	
-//	
-
-//	private String getReportingToEmployees(String teamName, Role role)
-//	{
-//		
-//		int ReportingTochecker = 0;
-//		boolean noEmployeeInTeam = false;
-//		
-//		
-//		if(role.name().equalsIgnoreCase(Role.MANAGER.name()))
-//		{
-//			return Resource.employees.get(0).getemployeeName();
-//		}
-//		
-//		System.out.println("Choose Reporting to : ");
-//		Utils.printSpace();
-//		System.out.println(" Employee ID	Name	  Role	");
-//		Utils.printLine();
-//		
-//		for(Employee employee : Resource.employees)
-//		{
-//			if(employee.getEmployeeTeamName().equals(teamName))
-//			{
-//
-//				if(employee.getemployeeRole().getValue() < role.getValue())
-//				{
-//					noEmployeeInTeam = true;
-//					System.out.println("      "+employee.getemployeeID()+"  	"+employee.getemployeeName()+"       "+employee.getemployeeRole());
-//					
-//				}
-//				
-//			}
-//		}
-//		
-//		if(noEmployeeInTeam == false)
-//		{
-//			Utils.printSpace();
-//			System.out.println("    *  No Employee above the Role prefered are not available * ");
-//			Utils.printSpace();
-//			System.out.println( "  * Temporary Reporting to, set as ~ CEO");
-//			Utils.printSpace();
-//			Utils.printSpace();
-//			return Resource.employees.get(0).getemployeeName();
-//		}
-//		
-//		Utils.printSpace();
-//		System.out.println("Enter Employee ID : ");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			
-//			int userID = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			for(Employee employee : Resource.employees)
-//			{
-//				if(employee.getemployeeID() == userID && employee.getEmployeeTeamName().equals(teamName) && employee.getemployeeRole().getValue() < role.getValue())
-//				{
-//					ReportingTochecker = 1;
-//					return employee.getemployeeName();
+//					System.out.printf("  %5s   -   %-5s\n",role.getRoleID(),role.getRoleName());
 //				}
 //			}
 //			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
+//			Utils.printLine();
 //			Utils.printSpace();
-//			Utils.scanner.nextLine();
-//			return getReportingToEmployees(teamName, role);
-//		}
-//		
-//		if( ReportingTochecker == 0)
-//		{
-//			Utils.printSpace();
-//			String reportName = getReportingToEmployees(teamName, role);
-//			return reportName;
-//			
-//		}
-//		
-//		return null;
-//	}
-//	
-//	
-//	private int displayReportingToID(String teamName, String reportingTo)
-//	{
-//		
-//		if(reportingTo.equalsIgnoreCase(Resource.employees.get(0).getemployeeName()))
-//		{
-//			return Resource.employees.get(0).getemployeeID();
-//		}
-//		
-//		for(Employee employee : Resource.employees)
-//		{
-//			if(employee.getemployeeName().equalsIgnoreCase(reportingTo) && employee.getEmployeeTeamName().equalsIgnoreCase(teamName))
-//			{
-//				return employee.getemployeeID();
-//			}
-//		}
-//		return 0;
-//	}
-	
-	
-	
-
-//
-//
-//	private void displayHrMenu(Employee employee)
-//	{
-//
-//		 System.out.println(" Features : ");
-//		 Utils.printLine();
-//		 System.out.println(" 1. Add Employee");  
-//		 System.out.println(" 2. Edit Employee Info");  
-//		 System.out.println(" 3. Add Team ");  
-//		 System.out.println(" 4. View Team Info");
-//		 System.out.print(" 5. Employee Requests. ");
-//		 
-//		 if(EmployeeValidation.isRequestsEmpty(employee) == false)
-//		 {
-//			 int messageCount = Utils.printRequestCount(employee);
-//			 System.out.print(" ~ ["+messageCount+"] Unread Messages");
-//		 }
-//		 
-//		 Utils.printSpace();
-//		 Utils.printSpace();
-//		 System.out.println(" 6. Logout.");
-//		 Utils.printLine();
-//		 Utils.printSpace();
-//
-//	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-//	private int getEmployeeID( String name)
-//	{
-//		
-//		for(Employee employee : Resource.employees)
-//		{
-//			if(employee.getemployeeName().equalsIgnoreCase(name))
-//			{
-//				return employee.getemployeeID();
-//			}
-//		}
-//		
-//		return 0;
-//		
-//	}
-
-//	private void editEmployeeDetails()
-//	{
-//		
-//		Employee getLastIndex = Resource.employees.get(Resource.employees.size()-1);
-//		
-//		if(getLastIndex.getemployeeID() <= 2)
-//		{
-//			System.out.println("  ~ No Employee Available to Edit.");
-//			Utils.printSpace();
-//			return;
-//		}
-//		
-//		System.out.println("Enter User ID : ");
-//		
-//		try
-//		{
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			if(userInput == 1)
-//			{
-//				System.out.println(" ~ Can't edit CEO Details.");
-//				Utils.printSpace();
-//				return;
-//			}
-//			
-//			if(userInput == 2)
-//			{
-//				System.out.println(" ~ You can't edit your details without permissions.");
-//				Utils.printSpace();
-//				return;
-//			}
-//	
-//				
-//			if(EmployeeValidation.isEmployeePresent(userInput) == true)
-//			{
-//					for(Employee employee : Resource.employees)
-//					{
-//						if(employee.getemployeeID() == userInput)
-//						{
-//							processEdit(employee);
-//							break;
-//						}
-//					
-//					}
-//				
-//			}
-//			else
-//			{
-//				Utils.printSpace();
-//				System.out.println(" Invalid Employee ID");
-//				return;
-//			}
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.printSpace();
-//			Utils.scanner.nextLine();
-//			return;
-//			
-//		}
-//		
-//		
-//	}
-//
-//	
-//	private void processEdit(Employee employee)
-//	{
-//		
-//		EmployeeManager.displayProfile(employee);
-//		System.out.println(" 1. Confirm User profile before Edit");
-//		System.out.println(" 2. Back");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			switch(userInput)
-//			{
-//			
-//				case CONFIRM :
-//					displayEditOption(employee);
-//					break;
-//					
-//				case BACK :
-//					break;
-//					
-//				default :
-//					Utils.printInvalidInputMessage();
-//					Utils.printSpace();
-//					processEdit(employee);
-//					return;
-//			}
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.printSpace();
-//			Utils.scanner.nextLine();
-//			processEdit(employee);
-//			return;
-//			
-//		}
-//		
-//		
-//	}
-//
-//
-//	private void displayEditOption(Employee employee) 
-//	{
-//		
-//		Utils.printSpace();
-//		System.out.println(" Choose an Option : ");
-//		Utils.printLine();
-//		System.out.println(" 1. Change Team.");
-//		System.out.println(" 2. Change Role.");
-//		System.out.println(" 3. Edit Reporting to");
-//		System.out.println(" 4. Edit Work Location");
-//		System.out.println(" 5. Back to Menu");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			switch(userInput)
-//			{
-//			
-//			case EDIT_TEAM_NAME :
-//				editTeamName(employee);		
-//				break;
-//				
-//			case EDIT_ROLE :
-//				editRole(employee);			
-//				break;
-//				
-//			case EDIT_REPORTING_ID :
-//				editReportingID(employee);	
-//				EmployeeManager.displayProfile(employee);
-//				displayEditOption(employee);
-//				break;
-//				
-//			case EDIT_LOCATION :
-//				editLocation(employee);     
-//				break;
-//				
-//			case BACK_MENU :
-//				break;
-//				
-//			}
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.printSpace();
-//			Utils.scanner.nextLine();
-//			displayEditOption(employee);
-//			return;
-//			
-//		}
-//
-//		
-//	}
-//
-//
-//	private void editReportingID(Employee employee)
-//	{
-//		
-//		String reportingTo = getReportingToEmployees(employee.getEmployeeTeamName(), employee.getemployeeRole());
-//		Utils.printSpace();
-//		
-//		if(reportingTo.equalsIgnoreCase(null))
-//		{
-//			
-//				Utils.printLine();
-//				System.out.println(" Currently No Employee above your role are Available.");
+//			return true;
 //		}
 //		else
 //		{
-//			employee.setReportingTo(reportingTo);
-//			employee.setReportingToID(getEmployeeID(reportingTo));
-//			
-//			if(reportingTo.equals(Resource.employees.get(0).getemployeeName()))
-//			{
-//				System.out.println("  ~ \"Manager\" Reporting to automatically set as - CEO. ");
-//	
-//			}
-//			else
-//			{
-//				System.out.println("  ~ Reporting to changed Successful. ");
-//			}
+//			System.out.println("  No Role is Available to display!!\n");
+//			return false;
 //		}
-//		Utils.printSpace();
 //		
 //	}
-//
-//
-//	private void editLocation(Employee employee) 
-//	{
-//		
-//		String location = getWorkLocationForPlaceTransfer(employee.getEmployeeWorkLocation());
-//		Utils.printSpace();
-//		employee.setEmployeeWorkLocation(location);
-//		System.out.println("  ~ Work Location Changed Successful.");
-//		Utils.printSpace();
-//		EmployeeManager.displayProfile(employee);
-//		displayEditOption(employee);
-//		return;
-//		
-//	}
-//
-//
-//	private void editRole(Employee employee)
-//	{
-//		
-//		
-//		Role role = changeEmployeeRole(employee.getemployeeRole());
-//
-//		if( role.equals(Role.MANAGER))
-//		{
-//			employee.setemployeeRole(role);
-//			employee.setReportingTo(Resource.employees.get(0).getemployeeName());
-//			employee.setReportingToID(Resource.employees.get(0).getemployeeID()); 
-//			EmployeeManager.displayProfile(employee);
-//			displayEditOption(employee);
-//			return;
-//		}
-//		
-//		if( role.getValue() == employee.getemployeeRole().getValue())
-//		{
-//			displayEditOption(employee);
-//			return;
-//		}
-//		
-//		if( employee.getemployeeRole().getValue() > role.getValue())
-//		{
-//			employee.setemployeeRole(role); 
-//			editReportingID(employee);
-//			System.out.println("   ~ Role changed Successful. ");
-//			Utils.printSpace();
-//			EmployeeManager.displayProfile(employee);
-//			displayEditOption(employee);
-//			return;
-//		}
-//		else
-//		{
-//			System.out.println(" please, Choose Role above the previous position");
-//			Utils.printSpace();
-//			changeEmployeeRole(employee.getemployeeRole());
-//			return;
-//		}
-//		
-//		
-//	}
-//
-//
-//	private void editTeamName(Employee employee)
-//	{
-//		int teamID = 0;
-//		if(employee.getemployeeRole().name().equals(Role.MANAGER.name()))
-//		{
-//			
-//			Utils.printSpace();
-//			System.out.println(" Without CEO Permissions, you can't change Team ..!");
-//			Utils.printSpace();
-//			Utils.printSpace();
-//			displayEditOption(employee);
-//			return;
-//		}
-//		try
-//		{
-//			if(EmployeeManager.listTeamName(employee.getEmployeeTeamName()) == true)
-//			{
-//				System.out.println(" Enter Team ID from the List : ");
-//				teamID = Utils.getIntInput();
-//				Utils.printSpace();
-//				
-//				if( EmployeeValidation.isTeamIDAlreadyExists(teamID))
-//				{
-//					String teamName = Utils.getTeamName(teamID);
-//					
-//					if(teamName.equalsIgnoreCase(employee.getEmployeeTeamName()))
-//					{
-//						Utils.printSpace();
-//						System.out.println(" You are already in "+teamName+" team.");
-//						Utils.printSpace();
-//						editTeamName(employee);
-//						return;
-//					}
-//					else
-//					{
-//						employee.setEmployeeTeamName(teamName);
-//						editReportingID(employee);
-//						System.out.println("  ~ Team Name changed Successful");
-//						Utils.printSpace();
-//						EmployeeManager.displayProfile(employee);
-//						displayEditOption(employee);
-//						return;
-//					}
-//				}
-//				else
-//				{
-//					Utils.printSpace();
-//					System.out.println(" ~ No such team is Available");
-//					Utils.printSpace();
-//					displayEditOption(employee);
-//					return;
-//				}
-//			}
-//		}
-//		catch(InputMismatchException e)
-//		{
-//				Utils.printSpace();
-//				System.out.println("  Enter Team ID only..!");
-//				Utils.printSpace();
-//				Utils.scanner.nextLine();
-//				editTeamName(employee);
-//		}
-//		
-//		
-//	}
-//	
-//	
-//	//overloaded method for editing team name from request.
-//	private void editTeamName(int senderID, String newTeam, Employee hr)
-//	{
-//		
-//		Utils.printSpace();
-//		Employee employee = Utils.getEmployeeObject(senderID);
-//		employee.setEmployeeTeamName(newTeam);
-//		Utils.printSpace();
-//		System.out.println("   	 Reporting to ~ must be in the same team ");
-//		Utils.printSpace();
-//		editReportingID(employee);
-//		Utils.printSpace();
-//	}
+
 	
+//-----------------------------------
+
+
 //	private  void processInbox(Employee employee)
 //	{
 //		int requestedID, checker = 0, senderID;
@@ -1569,60 +714,7 @@ public class HRViewController
 //		
 //	}
 	
-	//overloaded method for changing the work location
-//private String getWorkLocationForPlaceTransfer(String currentLocation)
-//{
-//	int checkLocationChanged = 0;
-//	System.out.println(" Enter User Work locationnn : ");
-//	Utils.printSpace();
-//	
-//	PreferedLocation[]  location = PreferedLocation.values();
-//
-//	for( PreferedLocation  places : location )
-//	{
-//		
-//		if( places.name().equalsIgnoreCase(currentLocation))
-//		{
-//			continue;
-//		}
-//		
-//		else
-//		{
-//			System.out.println(" "+places.getValue()+" - "+places);
-//		}
-//		
-//	}
-//	
-//	try
-//	{
-//		int userInput = Utils.getIntInput();
-//		Utils.printSpace();
-//		for( PreferedLocation  places : location )
-//		{
-//			checkLocationChanged = 1;
-//			if( places.getValue() == userInput && places.name().equalsIgnoreCase(currentLocation) == false)
-//			{
-//				
-//				return places.toString();
-//			}
-//		}
-//	}
-//	catch(InputMismatchException e)
-//	{
-//		
-//		Utils.printInvalidInputMessage();
-//		Utils.scanner.nextLine();
-//		return getWorkLocationForPlaceTransfer(currentLocation);
-//	}
-//	
-//	if( checkLocationChanged == 1)
-//	{
-//		Utils.printInvalidInputMessage();
-//		return getWorkLocationForPlaceTransfer(currentLocation);
-//	}
-//	return null;
-//}
-//
+
 //
 //public void requestMessages(Employee employee) 
 //{

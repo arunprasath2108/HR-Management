@@ -13,7 +13,7 @@ public class DBConstant
 	public static final String REPORTING_ID = "Reporting_ID";
 	public static final String WORK_LOCATION = "Work_Location";
 	public static final String DOJ = "DOJ";
-	public static final String MAIL_ID = "Company_Mail";
+	public static final String COMPANY_MAIL = "Company_Mail";
 	public static final String GENDER = "Gender";
 
 	
@@ -53,8 +53,6 @@ public class DBConstant
 	public static final String YEARS_OF_EXPERIENCE = "Years_Of_Experience";
 	
 	
-	
-
 	//Query constants
 	public static final String CREATE_TABLE_IF_NOT_EXISTS = "Create table if not exists ";
 	public static final String CREATE_DATABASE = "Create database ";
@@ -72,12 +70,11 @@ public class DBConstant
 	public static final String ON = "On";
 	
 	
-	
-	
 	//Query keys 
 	public static final String PRIMARY_KEY = "Primary key";
 	public static final String FOREIGN_KEY = "Foreign key";
 	public static final String UNIQUE_KEY = "Unique key";
+	
 	
 	//Joins
 	public static final String INNER_JOIN = "Inner Join";

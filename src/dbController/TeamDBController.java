@@ -63,36 +63,10 @@ public class TeamDBController
 		
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println(" Error occured in isTeamsAvailable method  !");
 		}
 		
 		return teamsCount;
-	}
-	
-	public static int getLastAddedTeamID()
-	{
-		int teamID = 0;
-		String query = DBConstant.SELECT + DBConstant.TEAM_ID +" "
-						+DBConstant.FROM + DBConstant.TEAMS_TABLE +" "
-						+ DBConstant.ORDER_BY + DBConstant.TEAM_ID +" "+DBConstant.DESC + DBConstant.LIMIT + 1;
-		
-		try 
-		{
-			
-			statement = DBConnector.getConnection().prepareStatement(query);
-			ResultSet result = statement.executeQuery();
-			result.next();
-			teamID = result.getInt(DBConstant.TEAM_ID);
-		} 
-		
-		catch (SQLException e) 
-		{
-			System.out.println(" Error occured in isTeamsAvailable method  !");
-		}
-		
-		return teamID;
-		
 	}
 	
 	public static boolean addTeam(Team team)
@@ -166,7 +140,6 @@ public class TeamDBController
 		} 
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println("  Error in isEmployeeInTeam method ");
 			
 		}
@@ -174,34 +147,60 @@ public class TeamDBController
 		
 	}
 	
-	
-//	public static String getTeamName(int teamID)
-//	{
-//		
-//		String query = DBConstant.SELECT + DBConstant.TEAM_NAME +" "+ DBConstant.FROM 
-//						+ DBConstant.TEAMS_TABLE +" "+ DBConstant.WHERE + DBConstant.TEAM_ID + " = " + teamID;
-//		
-//		try 
-//		{
-//			
-//			connection = DBConnector.getConnection();
-//			statement = connection.prepareStatement(query);
-//			ResultSet result = statement.executeQuery();
-//			result.next();
-//			String teamName = result.getString(DBConstant.TEAM_NAME);
-//			return teamName;
-//			
-//		} 
-//		
-//		catch (SQLException e) 
-//		{
-//			System.out.println(" Error occured in getting Team Name !");
-//		}
-//		
-//		return null;
-//	}
+	public static String getTeamName(int teamID)
+	{
+		
+		String query = DBConstant.SELECT + DBConstant.TEAM_NAME +" "+ DBConstant.FROM 
+						+ DBConstant.TEAMS_TABLE +" "+ DBConstant.WHERE + DBConstant.TEAM_ID + " = " + teamID;
+		
+		try 
+		{
+			
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			result.next();
+			String teamName = result.getString(DBConstant.TEAM_NAME);
+			return teamName;
+			
+		} 
+		
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in getting Team Name !");
+		}
+		
+		return null;
+	}
 	
 	
+	public static boolean setTeamID(int teamID, int employeeID)
+	{
+		
+		String query = DBConstant.UPDATE + DBConstant.EMPLOYEE_TABLE +" "+ DBConstant.SET 
+						+ DBConstant.TEAM_ID +" = "+teamID + DBConstant.WHERE + DBConstant.ID + " = "+employeeID;
+		
+		try 
+		{
+			
+			statement = DBConnector.getConnection().prepareStatement(query);
+			int result = statement.executeUpdate();
+			
+			if(result == 1)
+			{
+				return true;
+			}
+			
+		} 
+		
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in setting Team ID !");
+		}
+		return false;
+	}
 	
+	
+	
+
 	
 }

@@ -1,8 +1,12 @@
 package utils;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import dbController.*;
+import model.Employee;
 
 public class EmployeeValidation
 {
@@ -28,6 +32,8 @@ public class EmployeeValidation
 		
 		return false;
 	} 
+	
+	
 	
 	public static boolean isTeamIdPresent(int id)
 	{
@@ -65,7 +71,7 @@ public class EmployeeValidation
 	public static boolean isWorkLocationPresent(int input)
 	{
 		
-		if(EmployeeDBController.isWorkLocationPresent(input))
+		if(WorkLocationDBController.isWorkLocationPresent(input))
 		{
 			return true;
 		}
@@ -84,22 +90,71 @@ public class EmployeeValidation
 		return false;
 	}
 	
-//	public static boolean isDateValid(LocalDate todayDate, LocalDate inputDateFormat )
-//	{
-//		
-//		if((todayDate.compareTo(inputDateFormat))>=1 &&  todayDate.compareTo(inputDateFormat)<7)
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//	}
+	public static boolean isDateValid(String date1, Date date2)
+	{
+		
+		SimpleDateFormat simpleDateformat = new SimpleDateFormat("dd/MM/yyyy");
+		Date joiningDate = null;
+        Date todayDate = date2;
+        
+		try
+		{
+			
+			joiningDate = simpleDateformat.parse(date1);
+
+            long diff = todayDate.getTime() - joiningDate.getTime();
+
+            long diffDays = diff / (24 * 60 * 60 * 1000);
+
+            if(diffDays >=0 && diffDays <7) 
+            {
+            	return true;
+            }
+        } 
+		catch (ParseException e) 
+		{
+            e.printStackTrace();
+        }
+		return false;
+	}
 	
 	public static boolean isNameValid(String name) 
 	{
 		
 		 String input = name;
 		 Pattern pattern = Pattern.compile("^[A-Za-z\\s]{1,}[\\.]{0,1}[a-zA-Z\\s]{1,}[\\.]?$");
+		 Matcher matcher = pattern.matcher(input);
+		 
+		 while(matcher.find())
+		 {
+			 return true;
+		 }
+		
+		return false;
+		
+	}
+	
+	public static boolean isInputNameValid(String name) 
+	{
+		
+		 String input = name;
+		 Pattern pattern = Pattern.compile("^[A-Za-z]{2,}");
+		 Matcher matcher = pattern.matcher(input);
+		 
+		 while(matcher.find())
+		 {
+			 return true;
+		 }
+		
+		return false;
+		
+	}
+	
+	public static boolean isDateFormatValid(String date) 
+	{
+		
+		 String input = date;
+		 Pattern pattern = Pattern.compile("^[0-9]{1,2}/{1}[0-9]{1,2}/[0-9]{4}$");
 		 Matcher matcher = pattern.matcher(input);
 		 
 		 while(matcher.find())
@@ -139,7 +194,46 @@ public class EmployeeValidation
 		return false;
 		
 	}
+	
+	public static void checkProfileCompleted(int employeeID) 
+	 {
+		 		
+	 	if( !EmployeeValidation.isPersonalDetailUpdated(employeeID))
+	 	{
+	 		Utils.printSpace();
+	 		System.out.println("   * PROFILE IS INCOMPLETE * ");
+	 		Utils.printSpace();
+	 	}		
+	 }
+	
+
+	public static boolean isPersonalDetailUpdated(int employeeID)
+	{
 		
+		if(PersonalDBController.isPersonalInfoUpdated(employeeID))
+		{
+			return false;
+		}
+
+		return true;
+		
+	}
+		
+	
+	public static boolean isMobileNumberValid(String mobileNum)
+	{
+		
+		 String number = mobileNum;
+		 Pattern pattern = Pattern.compile("^[6-9]{1}[0-9]{9}$");
+		 Matcher matcher = pattern.matcher(number);
+		 
+		 while(matcher.find())
+		 {
+			 return true;
+		 }
+		return false;
+		
+	}
       
 	
 	
@@ -163,82 +257,10 @@ public class EmployeeValidation
 	
 	
 	
-//      		
-//      return false;
-//		Date date = new Date();
-//		SimpleDateFormat sdf = new SimpleDateFormat("D");
-//		String todaysCount = sdf.format(date);
-//		int today_Date_Count = Integer.parseInt(todaysCount);
-//		
-//		
-//		String[] currentDate = todayDate.split("/");
-//		int currentYear = Integer.parseInt(currentDate[2]);
-//		
-//	
-//		try
-//		{
-//			
-//			String[] userInputDateSplit = joiningDate.split("/");
-//			
-//			int datee = Integer.parseInt(userInputDateSplit[0]);
-//			int month = Integer.parseInt(userInputDateSplit[1]);
-//			int year = Integer.parseInt(userInputDateSplit[2]);
-//	
-//				
-//			if(datee >= 01 && datee <=31 && month >= 01 && month <=12 && year == currentYear)
-//			{
-//				
-//				Calendar c = Calendar.getInstance();
-//				
-//				c.set(year, month, datee );
-//				
-//				int joinDateCount = c.get(Calendar.DAY_OF_YEAR)-30;
-//				
-//
-//				if(today_Date_Count >= joinDateCount &&  (today_Date_Count)-(joinDateCount) <= 7)
-//				{
-//					return true;
-//				}
-//				else
-//				{
-//					return false;
-//				}
-//				
-//				
-//			}
-//			else
-//			{
-//				return false;
-//			}
-//				
-//
-//		}
-//		catch(Exception e)
-//		{
-//			Utils.printSpace();
-//			System.out.println(" Format -> DD/MM/YYYY ");
-//			Utils.printSpace();
-//			System.out.println(" Please, enter in this Correct Format.");
-//			Utils.printSpace();
-//			return false;
-//		}
-//		
-	
+
 	
 
-//
-//	public static boolean isPersonalDetailUpdated(Employee employeee)
-//	{
-//		
-//		if(employeee.getEmailID() == null || employeee.getEducation() == null || employeee.getWorkExperience() == null)
-//		{
-//			return false;
-//		}
-//		
-//		Utils.printSpace();
-//		return true;
-//		
-//	}
+
 //	
 //
 //	public static boolean isEmailValid(String mailID)
@@ -258,20 +280,7 @@ public class EmployeeValidation
 //	}
 //	
 //	
-//	public static boolean isMobileNumberValid(String mobileNum)
-//	{
-//		
-//		 String number = mobileNum;
-//		 Pattern pattern = Pattern.compile("^[6-9]{1}[0-9]{9}$");
-//		 Matcher matcher = pattern.matcher(number);
-//		 
-//		 while(matcher.find())
-//		 {
-//			 return true;
-//		 }
-//		return false;
-//		
-//	}
+
 //	
 //	
 //	public static boolean isPassedOutYearValid(String year)
@@ -384,72 +393,7 @@ public class EmployeeValidation
 //
 //
 
-//
-//	public static boolean isDateValid(String joiningDate, String todayDate)
-//	{
-//		
-//		Date date = new Date();
-//		SimpleDateFormat sdf = new SimpleDateFormat("D");
-//		String todaysCount = sdf.format(date);
-//		int today_Date_Count = Integer.parseInt(todaysCount);
-//		
-//		
-//		String[] currentDate = todayDate.split("/");
-//		int currentYear = Integer.parseInt(currentDate[2]);
-//		
-//	
-//		try
-//		{
-//			
-//			String[] userInputDateSplit = joiningDate.split("/");
-//			
-//			int datee = Integer.parseInt(userInputDateSplit[0]);
-//			int month = Integer.parseInt(userInputDateSplit[1]);
-//			int year = Integer.parseInt(userInputDateSplit[2]);
-//	
-//				
-//			if(datee >= 01 && datee <=31 && month >= 01 && month <=12 && year == currentYear)
-//			{
-//				
-//				Calendar c = Calendar.getInstance();
-//				
-//				c.set(year, month, datee );
-//				
-//				int joinDateCount = c.get(Calendar.DAY_OF_YEAR)-30;
-//				
-//
-//				if(today_Date_Count >= joinDateCount &&  (today_Date_Count)-(joinDateCount) <= 7)
-//				{
-//					return true;
-//				}
-//				else
-//				{
-//					return false;
-//				}
-//				
-//				
-//			}
-//			else
-//			{
-//				return false;
-//			}
-//				
-//
-//		}
-//		catch(Exception e)
-//		{
-//			Utils.printSpace();
-//			System.out.println(" Format -> DD/MM/YYYY ");
-//			Utils.printSpace();
-//			System.out.println(" Please, enter in this Correct Format.");
-//			Utils.printSpace();
-//			return false;
-//		}
-//		
-//		
-//		
-//	}
-//	
+
 	
 	
 }

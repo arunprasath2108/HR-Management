@@ -7,12 +7,14 @@ public class Team
 	private String teamName;
 	
 	
-	//constructor
+	
+	//default constructor
 	public Team(String teamName)
 	{
 		this.teamName = teamName;
 	}
 	
+	//constructor with two parameters
 	public Team(int teamID, String teamName)
 	{
 		this.teamID = teamID;
@@ -20,7 +22,10 @@ public class Team
 	}
 	
 	
-
+	
+	
+	//getters
+	
 	public int getTeamID()
 	{
 		return teamID;
@@ -30,6 +35,11 @@ public class Team
 	{
 		return teamName;
 	}
+	
+
+	
+	
+	
 
 //	public void setTeamID(int teamId)
 //	{

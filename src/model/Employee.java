@@ -1,17 +1,19 @@
 package model;
 
+import java.util.Date;
+
 public class Employee 
 {
 	
 		//basic info fields
 		private int employeeID;
 		private String employeeName;
-		private String role;
+		private int roleID;
 		private int reportingToID;
 		private int employeeTeamID;
 		private String companyMailId;
-		private String dateOfJoining;
-		private String employeeWorkLocation;
+		private Date dateOfJoining;
+		private int WorkLocationID;
 		private String gender;
 		
 		//personal info fields
@@ -22,25 +24,45 @@ public class Employee
 		private String address;
 		
 		
-		
-		public Employee(int id, String name, String role, int reportingToID , int employeeTeamID, String companyMailId, String doj, String location, String gender)
+		//constructor accepting all fields
+		public Employee(int id, String name, int roleID, int reportingToID , int employeeTeamID, String companyMailId, Date doj, int locationID, String gender)
 		{
 			
 			employeeID = id;
 			employeeName = name;
-			this.role = role;
+			this.roleID = roleID;
 			this.reportingToID = reportingToID;
 			this.employeeTeamID = employeeTeamID;
 			this.companyMailId = companyMailId;
 			dateOfJoining = doj;
-			employeeWorkLocation = location;
+			WorkLocationID = locationID;
+			this.gender = gender;
+			
+		}
+		
+		
+		//constructor without employeeID parameter for initially adding employee
+		public Employee(String name, int roleID, int reportingToID , int employeeTeamID, String companyMailId, Date doj, int locationID, String gender)
+		{
+			
+			employeeName = name;
+			this.roleID = roleID;
+			this.reportingToID = reportingToID;
+			this.employeeTeamID = employeeTeamID;
+			this.companyMailId = companyMailId;
+			dateOfJoining = doj;
+			WorkLocationID = locationID;
 			this.gender = gender;
 			
 		}
 		
 		
 		
-	
+		
+				
+		
+		//getters 
+		
 		public int getemployeeID()
 		{
 			return employeeID;
@@ -51,27 +73,27 @@ public class Employee
 			return employeeName;
 		}
 	
-		public String getemployeeRole()
+		public int getemployeeRoleID()
 		{
-			return role;
+			return roleID;
 		}
 
-		public int getEmployeeTeamName()
+		public int getEmployeeTeamID()
 		{
 			return employeeTeamID;
 		}
-		
+				
 		public int getReportingToID()
 		{
 			return reportingToID;
 		}
 		
-		public String getEmployeeWorkLocation()
+		public int getWorkLocationID()
 		{
-			return employeeWorkLocation;
+			return WorkLocationID;
 		}
 		
-		public String getDateOfJoining()
+		public Date getDateOfJoining()
 		{
 			return dateOfJoining;
 		}
@@ -86,19 +108,9 @@ public class Employee
 			return gender;
 		}
 		
-		public void setMobileNum(String number)
-		{
-			mobileNumber = number;
-		}
-		
 		public String getMobileNum()
 		{
 			return mobileNumber;
-		}
-		
-		public void setEmailID(String mail)
-		{
-			emailID = mail;
 		}
 		
 		public String getEmailID()
@@ -106,19 +118,9 @@ public class Employee
 			return emailID;
 		}
 		
-		public void setAddress(String address)
-		{
-			this.address = address;
-		}
-		
 		public String getAddress()
 		{
 			return address;
-		}
-		
-		public void setWorkExperience(String work)
-		{
-			workExperience = work;
 		}
 		
 		public String getWorkExperience()
@@ -126,15 +128,64 @@ public class Employee
 			return workExperience;
 		}
 		
+		public String getEducation()
+		{
+			return education;
+		}
+		
+		
+//----------------------------------------------------------------
+		
+		
+		//setters
+		
+		public void setReportingToID(int id)
+		{
+			reportingToID = id;
+		}
+		
+		public void setRoleID(int roleID)
+		{
+			this.roleID = roleID;
+		}
+		
+		public int setWorkLocationID(int locationID)
+		{
+			return WorkLocationID;
+		}
+		
+		public void setTeamID(int employeeTeamID)
+		{
+			this.employeeTeamID = employeeTeamID;
+		}
+		
+		public void setMobileNum(String number)
+		{
+			mobileNumber = number;
+		}
+		
+		public void setEmailID(String mail)
+		{
+			emailID = mail;
+		}
+		
+		public void setAddress(String address)
+		{
+			this.address = address;
+		}
+		
+		public void setWorkExperience(String work)
+		{
+			workExperience = work;
+		}
+		
 		public void setEducation(String education)
 		{
 			this.education = education;
 		}
 		
-		public String getEducation()
-		{
-			return education;
-		}
+		
+		
 		
 		
 		
@@ -159,10 +210,7 @@ public class Employee
 //			employeeTeamID = teamID;
 //		}
 		
-//		public void setReportingToID(int id)
-//		{
-//			reportingToID = id;
-//		}
+
 		
 //		public void setEmployeeWorkLocation(String location)
 //		{

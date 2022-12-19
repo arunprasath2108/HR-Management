@@ -1,6 +1,10 @@
 package utils;
 
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import dbController.*;
 
@@ -36,6 +40,19 @@ public class Utils
 		 System.out.println(" ----------------------------------------");
 	 }
 	 
+	 public static void printEnterUserID()
+	 {
+		 	printSpace();
+			System.out.println(" Enter User ID");
+	 }
+	 
+	 public static void printDefaultHRId()
+	 {
+		 printSpace();
+		 System.out.println("  # Default HR ID -> 2");
+		 printSpace();
+	 }
+	 
 	 public static void printEnterOption()
 	 {
 		 printSpace();
@@ -50,12 +67,32 @@ public class Utils
 			printSpace();
 	 }
 	 
+	 public static void printFailedToAddEmployee()
+	 {
+		 	printSpace();
+			System.out.println("  Failed to add Employee !");
+			printSpace();
+	 }
+	 
+	 public static void printFailedToEditEmployee()
+	 {
+		 	printSpace();
+			System.out.println("  Failed to Edit Employee Details!");
+			printSpace();
+	 }
+	 
+	 public static void printFailedToEditRole()
+	 {
+		 	printSpace();
+			System.out.println("  No Role above your previous Role is Available!!");
+			printSpace();
+	 }
+	 
 	 public static void printLoginFailMessage()
 	 {
 		 printSpace();
 		 System.out.println("  Incorrect User ID.");
 		 printSpace();
-		 printLine();
 	 }
 	 
 	 public static void printWelcomeMessage(int userID)
@@ -72,37 +109,61 @@ public class Utils
 		 printSpace();
 	 }
 	 
-//    public static LocalDate getTodayDate()
-//	{
-//    	
-//    	
-//    	LocalDate todayDate=LocalDate.now();  //y-m-d
-//    	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM"); 
-//    	String str=todayDate.format(formatter);
-//    	LocalDate dateTime = LocalDate.parse(str,formatter);
-//    	System.out.println(str+" "+dateTime+" "+todayDate);
-//		return todayDate;
-    	
-    	
-//			Date date = new Date();
-//			SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-//			String todayDate = simpleDateFormat.format(date);
-//			
-			//return todayDate;
-//	}
-    
-    
-//    public static LocalDate getDateFormat(String str) 
-//    {
-//    	
-//	    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd"); 
-//	    LocalDate dateTime = LocalDate.parse(str, formatter);
-//		return dateTime;
-//		
-//    }
+	 public static Date getTodayDateObject()
+	 {
+		 
+	     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
+		 Date todayDate;
+		try 
+		{
+			todayDate = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
+			return todayDate;
+		} 
+		catch (ParseException e)
+		{
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+			
+		 
+	 }
+	 
+	 public static String getTodayDate()
+	 {
+		 
+		   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");  
+		   LocalDate now = LocalDate.now();   
+		   return dtf.format(now);
+	 }
+	 
+	 public static void printLogOutMessage()
+	 {
+	     printSpace();
+		 System.out.println("	~ Logged Out ~	");	
+		 printSpace();
+		 
+	 }
 
     
     
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
+	 
 	 
 	 
 	 
@@ -113,12 +174,7 @@ public class Utils
 //	 }
 //
 //
-//	 public static void printLogOutMessage()
-//	 {
-//	     printSpace();
-//		 System.out.println("	~ Logged Out ~	");	
-//		 printSpace();
-//	 }
+
 //	
 //	
 //	 public static void printTeamAddedSuccessful()

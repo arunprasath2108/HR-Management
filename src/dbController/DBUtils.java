@@ -52,7 +52,7 @@ public class DBUtils
 				statement.executeUpdate();
 				
 			}
-			statement.close();
+
 				
 		}
 		catch (SQLException e) 
@@ -82,7 +82,6 @@ public class DBUtils
 		catch (SQLException e) 
 		{
 			System.out.println("  Can't create Role table ");
-			e.printStackTrace();
 		}
 		
 	}
@@ -139,7 +138,7 @@ public class DBUtils
 						+ DBConstant.REPORTING_ID + " int, "
 						+ DBConstant.WORK_LOCATION + " int, "
 						+ DBConstant.DOJ + " date not null, "
-						+ DBConstant.MAIL_ID + " varchar(100) unique not null, "
+						+ DBConstant.COMPANY_MAIL + " varchar(100) unique not null, "
 						+ DBConstant.GENDER + " varchar(10) not null, "
 						+ DBConstant.FOREIGN_KEY + " (role_ID) "
 						    + DBConstant.REFERENCES + " role(role_id), "
@@ -179,7 +178,6 @@ public class DBUtils
 		
 		catch (SQLException e)
 		{
-			e.printStackTrace();
 			System.out.println(" Can't add values into table ");
 		}
 	}
@@ -207,7 +205,6 @@ public class DBUtils
 		
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println("  Can't create personal info table ");
 		}
 		

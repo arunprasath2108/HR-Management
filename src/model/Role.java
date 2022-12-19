@@ -8,6 +8,7 @@ public class Role
 	private int rolePriority;
 	
 	
+	//default constructor 
 	public Role(int roleID, String roleName, int rolePriority)
 	{
 		this.roleID = roleID;
@@ -15,6 +16,7 @@ public class Role
 		this.rolePriority = rolePriority;
 	}
 	
+	//constructor with only two parameters
 	public Role(String roleName, int rolePriority)
 	{
 		
@@ -24,6 +26,8 @@ public class Role
 	
 	
 
+	//getters
+	
 	public int getRoleID()
 	{
 		return roleID;
@@ -38,6 +42,18 @@ public class Role
 	{
 		return rolePriority;
 	}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
