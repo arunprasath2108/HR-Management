@@ -1,6 +1,7 @@
 package model;
 
-import java.util.Date;
+import java.util.*;
+
 
 public class Employee 
 {
@@ -19,9 +20,10 @@ public class Employee
 		//personal info fields
 		private String emailID;
 		private String mobileNumber;
-		private String education;
-		private String workExperience;
+		private String highestDegree;
+		private String passedOutYear;
 		private String address;
+		private ArrayList<WorkExperience> workExperience;
 		
 		
 		//constructor accepting all fields
@@ -44,7 +46,6 @@ public class Employee
 		//constructor without employeeID parameter for initially adding employee
 		public Employee(String name, int roleID, int reportingToID , int employeeTeamID, String companyMailId, Date doj, int locationID, String gender)
 		{
-			
 			employeeName = name;
 			this.roleID = roleID;
 			this.reportingToID = reportingToID;
@@ -53,13 +54,11 @@ public class Employee
 			dateOfJoining = doj;
 			WorkLocationID = locationID;
 			this.gender = gender;
-			
 		}
 		
 		
 		
 		
-				
 		
 		//getters 
 		
@@ -123,14 +122,19 @@ public class Employee
 			return address;
 		}
 		
-		public String getWorkExperience()
+		public ArrayList<WorkExperience> getWorkExperience()
 		{
 			return workExperience;
 		}
 		
-		public String getEducation()
+		public String getHighestDegree()
 		{
-			return education;
+			return highestDegree;
+		}
+		
+		public String getPassedOutYear()
+		{
+			return passedOutYear;
 		}
 		
 		
@@ -174,16 +178,20 @@ public class Employee
 			this.address = address;
 		}
 		
-		public void setWorkExperience(String work)
+		public void setWorkExperience(ArrayList<WorkExperience> work)
 		{
 			workExperience = work;
 		}
 		
-		public void setEducation(String education)
+		public void setHighestDegree(String education)
 		{
-			this.education = education;
+			this.highestDegree = education;
 		}
 		
+		public void setPassedOutYear(String year)
+		{
+			this.passedOutYear = year;
+		}
 		
 		
 		

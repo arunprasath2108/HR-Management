@@ -4,6 +4,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import model.Employee;
+
+
 public class PersonalDBController 
 {
 	
@@ -17,17 +20,9 @@ public class PersonalDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			return (statement.executeUpdate() != 0);
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in setting Mobile number !");
@@ -44,17 +39,9 @@ public class PersonalDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			return (statement.executeUpdate() != 0);
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in setting Personal Mail !");
@@ -62,7 +49,72 @@ public class PersonalDBController
 		return false;
 	}
 	
-	public static boolean createRow(int employeeID)
+	public static boolean isPersonalMailExist(String mail)
+	{
+		
+		String query = DBConstant.SELECT + DBConstant.EMAIL_ID +" " + DBConstant.FROM 
+						+ DBConstant.PERSONAL_INFORMATION_TABLE +" "+ DBConstant.WHERE 
+						+ DBConstant.EMAIL_ID + " = '" + mail +"'";
+		
+		try 
+		{
+			
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next())
+			{
+				if(mail.equalsIgnoreCase(result.getString(DBConstant.EMAIL_ID)))
+				{
+					return true;
+				}
+			}
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in Mail Verification !");
+		}
+		return false;
+	}
+	
+	public static boolean setAddress(String address, int employeeID)
+	{
+		
+		String query = DBConstant.UPDATE + DBConstant.PERSONAL_INFORMATION_TABLE +" "+ DBConstant.SET 
+						+ DBConstant.ADDRESS +" = '"+ address +"' " + DBConstant.WHERE + DBConstant.EMPLOYEE_ID + " = "+employeeID;
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			return (statement.executeUpdate() != 0);
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in setting current address !");
+		}
+		return false;
+	}
+	
+	public static boolean setHigherQualification(String degree,String passedOut, int employeeID)
+	{
+		
+		String query = DBConstant.UPDATE + DBConstant.PERSONAL_INFORMATION_TABLE +" "+ DBConstant.SET 
+						+ DBConstant.DEGREE +" = '"+ degree +"' , "+DBConstant.PASSED_OUT_YEAR + " = '" + passedOut +"' " + DBConstant.WHERE + DBConstant.EMPLOYEE_ID + " = "+employeeID;
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			return (statement.executeUpdate() != 0);
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in setting Qualification !");
+		}
+		return false;
+	}
+	
+	
+	public static boolean createRowInPersonalInfoTable(int employeeID)
 	{
 		
 		String query = DBConstant.INSERT_INTO + DBConstant.PERSONAL_INFORMATION_TABLE +" ("
@@ -70,27 +122,18 @@ public class PersonalDBController
 
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			return (statement.executeUpdate() != 0);
 		} 
-		
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println(" Error occured in creating Row in personal Info Table !");
 		}
 		return false;
 	}
 	
 	
-	public static boolean isPersonalInfoUpdated(int employeeID)
+	public static boolean isProfileIncomplete(int employeeID)
 	{
 		
 		String query = DBConstant.SELECT + DBConstant.EMAIL_ID +", "+ DBConstant.DEGREE + " " + DBConstant.FROM
@@ -104,24 +147,48 @@ public class PersonalDBController
 			
 			while(result.next())
 			{
-				String mail = result.getString(DBConstant.EMAIL_ID);    //  1 - email_id column in personal info
-				String degree = result.getString(DBConstant.DEGREE);  //  2 - Degree column in personal info
-				
-				if(mail == null || degree == null)
+				if(result.getString(DBConstant.EMAIL_ID) == null || result.getString(DBConstant.DEGREE) == null)
 				{
 					return true;
 				}
 			}
-			
 		} 
-		
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println(" Error occured in checking personal info updated or not !");
 		}
-		
 		return false;
+	}
+	
+	public static Employee getEmployee(int employeeID, Employee employee)
+	{
+
+		String query = DBConstant.SELECT + " * "+ DBConstant.FROM 
+				+ DBConstant.PERSONAL_INFORMATION_TABLE +" "+ DBConstant.WHERE + DBConstant.EMPLOYEE_ID + " = " + employeeID;
+
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next())
+			{
+
+					employee.setMobileNum(result.getString(DBConstant.MOBILE));
+					employee.setEmailID(result.getString(DBConstant.EMAIL_ID));
+					employee.setAddress(result.getString(DBConstant.ADDRESS));
+					employee.setHighestDegree(result.getString(DBConstant.DEGREE));
+					employee.setPassedOutYear(result.getString(DBConstant.PASSED_OUT_YEAR));
+					
+					return employee;
+			}
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in getting Employee Instance !!");
+		}
+		
+		return null;
 	}
 	
 

@@ -1,6 +1,8 @@
 package viewController;
 
 import java.util.ArrayList;
+import java.util.InputMismatchException;
+
 import dbController.*;
 import model.*;
 import utils.*;
@@ -30,7 +32,7 @@ public class EmployeeViewController
 		Utils.printLine();
 		System.out.println("  Team Name	  : " + TeamDBController.getTeamName(employee.getEmployeeTeamID()));
 		System.out.println("  Employee ID     : " + EmployeeDBController.getEmployeeID(employee.getemployeeName()));
-		System.out.println("  Name		  : " + EmployeeDBController.getEmployeeName(EmployeeDBController.getEmployeeID(employee.getemployeeName())));
+		System.out.println("  Name		  : " + employee.getemployeeName());
 		System.out.println("  Role		  : " + RoleDBController.getRoleName(employee.getemployeeRoleID()));
 		System.out.println("  Reporting to	  : " + employee.getReportingToID()+" - "+EmployeeDBController.getEmployeeName(employee.getReportingToID()));
 		System.out.println("  Official Mail   : " + employee.getCompanyMailId());
@@ -41,21 +43,47 @@ public class EmployeeViewController
 		
 	}
 	
-	public void displayPersonalInfo(Employee employeee)
+	public void displayPersonalInfo(Employee employee)
 	{
 		
 		System.out.println(" PERSONAL INFORMATION :");
 		Utils.printLine();
-		System.out.println(" Mobile		  : "+employeee.getMobileNum());
-		System.out.println(" Email ID	  : "+employeee.getEmailID());
-		System.out.println(" Address	  : "+employeee.getAddress());
-		System.out.println(" Work Experience  : "+employeee.getWorkExperience());
-		System.out.println(" Education	  : "+employeee.getEducation());
+		Utils.printSpace();
+		System.out.println(" Mobile		  : "+employee.getMobileNum());
+		Utils.printSpace();
+		System.out.println(" Email ID	  : "+employee.getEmailID());
+		Utils.printSpace();
+		System.out.println(" Address	  : "+employee.getAddress());
+		Utils.printSpace();
+		System.out.println(" Qualification	  : "+employee.getHighestDegree());
+		Utils.printSpace();
+		System.out.println(" Passed Out	  : "+employee.getPassedOutYear());
+		Utils.printSpace();
+
+		if(!employee.getWorkExperience().isEmpty())
+		{
+			listWorkExperience(employee.getWorkExperience());
+		}
 		Utils.printLine();
 		Utils.printSpace();
 		
 	}
 	
+	public void listWorkExperience(ArrayList<WorkExperience> experiences)
+	{
+		int count = 1;
+		Utils.printSpace();
+		System.out.println(" WORK EXPERIENCE  :");
+		
+		for(WorkExperience work : experiences)
+		{
+			Utils.printSpace();
+			System.out.println(" " +(count++) + " - Company Name : " + work.getCompanyName());
+			System.out.println("     Company Role : " + work.getRoleInCompany());
+			System.out.println("     Experience   : " + work.getExperience());
+			Utils.printSpace();
+		}
+	}
 	
 	public void editPersonalInfo(Employee employee)
 	{
@@ -89,6 +117,115 @@ public class EmployeeViewController
 		Utils.printSpace();
 	}
 	
+	public String getMobileNum()
+	{
+		
+		Utils.printSpace();	
+		System.out.println(" Enter 10 Digit Number.");
+		return Utils.getStringInput();
+		
+	}
+	
+	public String getPersonalMail()
+	{
+		
+		Utils.printSpace();
+		System.out.println(" Enter E-Mail ID");
+		return Utils.getStringInput();
+	}
+	
+	public String getAddress()
+	{
+		
+		System.out.println(" Enter your Address in the below format");
+		Utils.printSpace();
+		System.out.println(" Home Address, Street, City");
+		Utils.printSpace();
+		System.out.println(" sample address ->  1/12, North Street, Coimbatore");
+		Utils.printSpace();
+		
+		return Utils.getStringInput();
+	}
+	
+	public int getQualification()
+	{
+		System.out.println(" Enter your Higher Qualification");
+		Utils.printSpace();
+		System.out.println(" 1. B.E / B.Tech ");
+		System.out.println(" 2. M.E / M.Tech ");
+		System.out.println(" 3. Arts Stream (Bsc / Msc / BA)");
+		Utils.printSpace();
+		System.out.println(" Choose a option.");
+
+		return getInputFromEmployee();
+	}
+	
+	public String passedOutYear()
+	{
+		
+		System.out.println(" Passed Out year     Format  -> [ yyyy ]");
+		return Utils.getStringInput();
+	}
+	
+	public int getInputFromEmployee()
+	{
+		
+		try
+		{
+			return Utils.getIntInput();
+		}
+		catch(InputMismatchException e)
+		{
+			Utils.scanner.nextLine();
+			return 0;
+		}
+
+	}
+	
+	public String getCompanyName()
+	{
+		
+		System.out.println(" Enter Company Name : ");
+		return Utils.getStringInput();
+	}
+	
+	public String getCompanyRole()
+	{
+		
+		System.out.println(" Enter Role in the Compane : ");
+		return Utils.getStringInput();
+	}
+	
+	public int getYearsOfExperience()
+	{
+		
+		System.out.println("  * Number of year you have worked for that company: ");
+		System.out.println("  * Enter years in number : \n");
+		System.out.println("  NOTE : If Experience is less than 1 year  ->  enter as [0] ");
+
+		
+		return Utils.getIntInput();
+	}
+	
+	public int getMonthsOfExperience()
+	{
+		
+		System.out.println("  * Number of Months : ");
+		System.out.println("  * NOTE : Enter above [3] months only, if below 3  ->  enter as [0] :");
+		
+		return Utils.getIntInput();
+	}
+	
+	public int confirmBeforeAddExperience()
+	{
+		
+		System.out.println(" 1. Confirm before add Experience ");
+		System.out.println(" 2. Back");
+		Utils.printSpace();
+		System.out.println(" NOTE : YOU CAN'T EDIT THIS WORK EXPERIENCE ONCE ADDED !!!");
+		
+		return getInputFromEmployee();
+	}
 	
 	
 	
@@ -104,23 +241,8 @@ public class EmployeeViewController
 	
 	
 	
-//	public String getMobileNum()
-//	{
-//		
-//		Utils.printSpace();	
-//		System.out.println(" Enter 10 Digit Number.");
-//		String number = Utils.getStringInput();
-//		return number;
-//	}
-//	
-//	public String getPersonalMail()
-//	{
-//		
-//		Utils.printSpace();
-//		System.out.println(" Enter Mail ID.");
-//		String mailID = Utils.getStringInput();
-//		return mailID;
-//	}
+
+
 	
 
 }

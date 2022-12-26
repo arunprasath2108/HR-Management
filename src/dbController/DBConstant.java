@@ -48,9 +48,31 @@ public class DBConstant
 	
 	//Work Experience Table Constants
 	public static final String WORK_EXPERIENCE_TABLE = "Work_Experience";
+	public static final String WORK_EXPERIENCE_ID = "Work_experience_id";
 	public static final String COMPANY_NAME = "Company_Name";
 	public static final String COMPANY_ROLE = "Company_Role";
 	public static final String YEARS_OF_EXPERIENCE = "Years_Of_Experience";
+	
+	
+	
+	//Requests Table Constants
+	public static final String TEAM_CHANGE_REQUEST_TABLE = "Team_Change_Request";
+	public static final String REQUEST_ID = "Request_ID";
+	public static final String REQUEST_BY = "Request_By";
+	public static final String RECEIVER_ID = "Receiver_ID";
+	public static final String REQUESTED_ON = "Requested_On";
+	public static final String STATUS = "Status";
+	
+	
+	
+	//Notification Table Constants
+	public static final String NOTIFICATION_TABLE = "Notification";
+	public static final String NOTIFICATION_ID = "Notification_ID";
+	public static final String NOTIFICATION = "Notification";
+	public static final String NOTIFICATION_SEEN = "Notification_seen";
+	public static final String NOTIFICATION_TIME = "Notification_Time";
+	public static final String TRUE = "True";
+	public static final String FALSE = "False";
 	
 	
 	//Query constants
@@ -63,6 +85,7 @@ public class DBConstant
 	public static final String REFERENCES = " References ";
 	public static final String LIMIT = " Limit ";
 	public static final String UPDATE = " Update ";
+	public static final String DELETE = "Delete ";
 	public static final String SET = " Set ";
 	public static final String AND = " And ";
 	public static final String DESC = " Desc ";

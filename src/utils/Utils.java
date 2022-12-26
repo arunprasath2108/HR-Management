@@ -4,9 +4,12 @@ package utils;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import dbController.*;
+import model.Employee;
 
 
 public class Utils
@@ -30,6 +33,13 @@ public class Utils
 		return input;
 	 }
 	 
+	 public static void printMessage(String message)
+	 {
+	     printSpace();
+		 System.out.println(message);	
+		 printSpace();
+	 }
+	 
 	 public static void printSpace()
 	 {
 		 System.out.print("\n");
@@ -37,62 +47,7 @@ public class Utils
 	 
 	 public static void printLine()
 	 {
-		 System.out.println(" ----------------------------------------");
-	 }
-	 
-	 public static void printEnterUserID()
-	 {
-		 	printSpace();
-			System.out.println(" Enter User ID");
-	 }
-	 
-	 public static void printDefaultHRId()
-	 {
-		 printSpace();
-		 System.out.println("  # Default HR ID -> 2");
-		 printSpace();
-	 }
-	 
-	 public static void printEnterOption()
-	 {
-		 printSpace();
-		 System.out.print(" Enter an option : ");
-		 printSpace();
-	 }
-	 
-	 public static void printInvalidInputMessage()
-	 {
-		 	printSpace();
-			System.out.println(" Please Enter a Valid Input.");
-			printSpace();
-	 }
-	 
-	 public static void printFailedToAddEmployee()
-	 {
-		 	printSpace();
-			System.out.println("  Failed to add Employee !");
-			printSpace();
-	 }
-	 
-	 public static void printFailedToEditEmployee()
-	 {
-		 	printSpace();
-			System.out.println("  Failed to Edit Employee Details!");
-			printSpace();
-	 }
-	 
-	 public static void printFailedToEditRole()
-	 {
-		 	printSpace();
-			System.out.println("  No Role above your previous Role is Available!!");
-			printSpace();
-	 }
-	 
-	 public static void printLoginFailMessage()
-	 {
-		 printSpace();
-		 System.out.println("  Incorrect User ID.");
-		 printSpace();
+		 System.out.println(" ------------------------------------------");
 	 }
 	 
 	 public static void printWelcomeMessage(int userID)
@@ -101,14 +56,7 @@ public class Utils
 			System.out.println("       Welcome "+EmployeeDBController.getEmployeeName(userID)+" !!");
 			Utils.printLine();
 	 }
-	 
-	 public static void printTryAgainMessage()
-	 {
-		 printSpace();
-		 System.out.println("  Please, Try Again with Unique Name...");
-		 printSpace();
-	 }
-	 
+	
 	 public static Date getTodayDateObject()
 	 {
 		 
@@ -121,30 +69,64 @@ public class Utils
 		} 
 		catch (ParseException e)
 		{
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("  Error in Today date getting method");
 		}
-		
 		return null;
-			
-		 
 	 }
 	 
+	 //for joining date display
 	 public static String getTodayDate()
 	 {
-		 
 		   DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");  
 		   LocalDate now = LocalDate.now();   
 		   return dtf.format(now);
 	 }
 	 
-	 public static void printLogOutMessage()
+	 public static Date getCurrentDateTime()
+	 {
+		 return new Date();
+	 }
+	 
+//	 public static String getCurrentDateAndTime()
+//	 {
+//		 LocalDateTime now = LocalDateTime.now();  
+//	     DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");  
+//	     String formatDateTime = now.format(format);  
+//	     return formatDateTime;
+//	     
+//	 }
+
+	 public static void printErrorMessageInAdd()
 	 {
 	     printSpace();
-		 System.out.println("	~ Logged Out ~	");	
+		 System.out.println("   * Please, Enter a valid Name to Add \n");	
+		 System.out.println("   * Name should be minimum of 2 characters & start with alphabet ");
 		 printSpace();
 		 
 	 }
+	 public static void NoHigherRoleAvailable()
+	 {
+		 System.out.println("  You have prefered Higher Role...\n");
+		 System.out.println("  So, this Role has automatically  set default Reporting to -> CEO\n");
+	 }
+	 
+	public static Employee getEmployee(int userID)
+	{
+
+		//get basic Information in employee table
+		Employee employeeBasicData = EmployeeDBController.getEmployee(userID);
+		
+		//get personal Information in personal Information Table
+		Employee employeePersonalInfo = PersonalDBController.getEmployee(userID, employeeBasicData);
+
+		Employee employeeWorkExperience = WorkExperienceDBController.getEmployee(userID, employeePersonalInfo);
+
+		return employeeWorkExperience;
+	}
+	 
+	
+	 
+	 
 
     
     

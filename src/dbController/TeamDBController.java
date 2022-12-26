@@ -25,21 +25,17 @@ public class TeamDBController
 			
 			while(result.next())
 			{
-				int id = result.getInt(DBConstant.TEAM_ID);
-				
-				if(id == userInput)
+				if(result.getInt(DBConstant.TEAM_ID) == userInput)
 				{
 					return true;
 				}
 			}
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in isTeamsPresent method  !\n");
 		}
 		return false;
-		
 	}
 	
 	public static int isTeamsAvailable()
@@ -55,17 +51,13 @@ public class TeamDBController
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			
-			teamsCount = result.getInt(1); 	//if minimum one team is present in teams table, it returns value 1
-			 								//1 - column Index (count) 
-			
-		} 
-		
+
+			return result.getInt(1); 	//if minimum one team is present in teams table, it returns value 1 
+		} 								//1 - column Index (count)
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in isTeamsAvailable method  !");
 		}
-		
 		return teamsCount;
 	}
 	
@@ -80,21 +72,19 @@ public class TeamDBController
 		{
 			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			statement.executeUpdate();
-			return true;
+			return (statement.executeUpdate() == 1);
 		} 
 		catch (SQLException e) 
 		{
 			return false;
 		}
-		
 	}
 	
 	public static ArrayList<Team> listTeam()
 	{
 		
 		ArrayList<Team> teams = new ArrayList<>();
-		Team team = null;
+		Team team;
 		String query = DBConstant.SELECT + " * "+ DBConstant.FROM + DBConstant.TEAMS_TABLE;
 		
 		try 
@@ -109,7 +99,6 @@ public class TeamDBController
 				String teamName = result.getString(DBConstant.TEAM_NAME);
 				team = new Team(teamID, teamName);
 				teams.add(team);
-			
 			}
 			return teams;
 		} 
@@ -117,7 +106,35 @@ public class TeamDBController
 		{
 			return null;
 		}
+	}
+	
+	public static ArrayList<Team> listTeamExceptCurrentTeam(int teamId)
+	{
 		
+		ArrayList<Team> teams = new ArrayList<>();
+		Team team;
+		String query = DBConstant.SELECT + " * "+ DBConstant.FROM + DBConstant.TEAMS_TABLE 
+						+ DBConstant.WHERE + DBConstant.TEAM_ID +" != "+ teamId;
+		
+		try 
+		{
+			
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next())
+			{
+				int teamID = result.getInt(DBConstant.TEAM_ID);
+				String teamName = result.getString(DBConstant.TEAM_NAME);
+				team = new Team(teamID, teamName);
+				teams.add(team);
+			}
+			return teams;
+		} 
+		catch (SQLException e) 
+		{
+			return null;
+		}
 	}
 	
 	public static int isEmployeeInTeam(int teamID, int userInput)
@@ -129,22 +146,21 @@ public class TeamDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			
 			while(result.next())
 			{
-				id = result.getInt(DBConstant.ID);
+				return result.getInt(DBConstant.ID);
 			}
 		} 
 		catch (SQLException e) 
 		{
-			System.out.println("  Error in isEmployeeInTeam method ");
+			e.printStackTrace();
+			System.out.println("  Error in verify Employee is Present in team or not ");
 			
 		}
 		return id;
-		
 	}
 	
 	public static String getTeamName(int teamID)
@@ -155,24 +171,22 @@ public class TeamDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
-			result.next();
-			String teamName = result.getString(DBConstant.TEAM_NAME);
-			return teamName;
 			
+			while(result.next())
+			{
+				return result.getString(DBConstant.TEAM_NAME);
+			}
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getting Team Name !");
 		}
-		
 		return null;
 	}
 	
-	
+
 	public static boolean setTeamID(int teamID, int employeeID)
 	{
 		
@@ -181,17 +195,9 @@ public class TeamDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			return (statement.executeUpdate() == 1);
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in setting Team ID !");

@@ -15,9 +15,11 @@ public class DBUtils
 		createTeamsTable();
 		createWorkLocationTable();
 		createEmployeeTable();
-		//insertLoctions();
-		createPersonalInfo();
-		createWorkExperience();
+//		insertDefaultLoctions();
+		createPersonalInfoTable();
+		createWorkExperienceTable();
+		createRequestsTable();
+		createNotificationTable();
 	}
 	
 	
@@ -29,18 +31,18 @@ public class DBUtils
 
 		try
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet resultSet = statement.executeQuery();
 			
 			while(resultSet.next())
 			{
+				
 				String existingDB = resultSet.getString(1);
 				
 				if(existingDB.equals(DBConstant.DATABASE_NAME))
 				{
 					isPresent = false;
-					System.out.println("  Database Already Exists..!");
+					System.out.println("  Database Already Exists..!\n");
 					break;
 				}
 			}
@@ -50,10 +52,7 @@ public class DBUtils
 				String query2 = DBConstant.CREATE_DATABASE + DBConstant.DATABASE_NAME;
 				statement = DBConnector.getConnection().prepareStatement(query2);
 				statement.executeUpdate();
-				
 			}
-
-				
 		}
 		catch (SQLException e) 
 		{
@@ -73,17 +72,13 @@ public class DBUtils
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println("  Can't create Role table ");
 		}
-		
 	}
 	
 	public static void createTeamsTable()
@@ -95,12 +90,9 @@ public class DBUtils
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println("  Can't create Team table ");
@@ -116,10 +108,8 @@ public class DBUtils
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
 		catch (SQLException e) 
 		{
@@ -149,20 +139,16 @@ public class DBUtils
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println("  can't create Employee Table ");
 		}
-
 	}
 
-	public static void insertLoctions()
+	public static void insertDefaultLoctions()
 	{
 		
 		String query = DBConstant.INSERT_INTO + " " + DBConstant.WORK_LOCATION_TABLE + " ("
@@ -170,19 +156,16 @@ public class DBUtils
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		}
-		
 		catch (SQLException e)
 		{
 			System.out.println(" Can't add values into table ");
 		}
 	}
 
-	public static void createPersonalInfo()
+	public static void createPersonalInfoTable()
 	{
 		
 		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS + " " + DBConstant.PERSONAL_INFORMATION_TABLE + " ("
@@ -197,44 +180,84 @@ public class DBUtils
 		
 		try
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println("  Can't create personal info table ");
 		}
-		
 	}
 	
-	public static void createWorkExperience()
+	public static void createWorkExperienceTable()
 	{
 		
 		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS + " " + DBConstant.WORK_EXPERIENCE_TABLE + "("
-						+ DBConstant.EMPLOYEE_ID +" int primary key, "
+						+ DBConstant.WORK_EXPERIENCE_ID + " serial primary key, "
+						+ DBConstant.EMPLOYEE_ID +" int , "
 						+ DBConstant.COMPANY_NAME +" varchar(50), "
 						+ DBConstant.COMPANY_ROLE + " varchar(30), "
-						+ DBConstant.YEARS_OF_EXPERIENCE +" int, "
+						+ DBConstant.YEARS_OF_EXPERIENCE +" varchar(20), "
 						+ DBConstant.FOREIGN_KEY +" (" + DBConstant.EMPLOYEE_ID +") "
 						    + DBConstant.REFERENCES + DBConstant.EMPLOYEE_TABLE + " (" + DBConstant.ID +") )";
 		
 		try
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			statement.executeUpdate();
-			statement.close();
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println("  Can't create work experience table ");
-			
 		}
 	}
+	
+	public static void createRequestsTable()
+	{
+		
+		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS +" "+DBConstant.TEAM_CHANGE_REQUEST_TABLE +" ("
+				        +DBConstant.REQUEST_ID +" int not null generated always as identity (increment 2 start 101) "+DBConstant.PRIMARY_KEY + ", "
+						+ DBConstant.REQUEST_BY +" int not null,"+DBConstant.RECEIVER_ID +" int not null, "
+						+ DBConstant.REQUESTED_ON +" timestamp not null, "
+						+ DBConstant.TEAM_ID + " int not null, "
+						+ DBConstant.STATUS + " varchar(255), "
+						+ DBConstant.FOREIGN_KEY +" (" + DBConstant.RECEIVER_ID +") "
+						    + DBConstant.REFERENCES + DBConstant.EMPLOYEE_TABLE + " (" + DBConstant.ID +") )";
+		
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println("  Can't create Request table ");
+		}
+	}
+	
+	public static void createNotificationTable()
+	{
+		
+		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS +" "+DBConstant.NOTIFICATION_TABLE +" ("
+						+  DBConstant.NOTIFICATION_ID + " serial , " + DBConstant.EMPLOYEE_ID +" int , " + DBConstant.NOTIFICATION + " varchar(255), "
+						+ DBConstant.NOTIFICATION_SEEN +" boolean not null , "
+						+ DBConstant.NOTIFICATION_TIME + " timestamp not null, "
+						+ DBConstant.FOREIGN_KEY +" (" + DBConstant.EMPLOYEE_ID +") "
+						    + DBConstant.REFERENCES + DBConstant.EMPLOYEE_TABLE + " (" + DBConstant.ID +") )";
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) 
+		{
+			e.printStackTrace();
+			System.out.println("  Can't create Notification table ");
+		}
+	}
+	
 
 	
 }

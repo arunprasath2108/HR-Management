@@ -4,6 +4,7 @@ import java.sql.*;
 import java.util.*;
 import model.*;
 
+
 public class RoleDBController 
 {
 
@@ -19,19 +20,15 @@ public class RoleDBController
 
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			int roleID = result.getInt(DBConstant.ROLE_ID);
-			return roleID;
-			
+			return result.getInt(DBConstant.ROLE_ID);
 		} 
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getRoleName method  !");
 		}
-		
 		return 0;
 	}
 	
@@ -44,19 +41,15 @@ public class RoleDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			String role = result.getString(DBConstant.ROLE_NAME);
-			return role;
-			
+			return result.getString(DBConstant.ROLE_NAME);			
 		} 
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getRoleName method  !");
 		}
-		
 		return null;
 	}
 	
@@ -73,20 +66,16 @@ public class RoleDBController
 			
 			while(result.next())
 			{
-				int id = result.getInt(DBConstant.ROLE_ID);
-				
-				if(id == roleID)
+				if(result.getInt(DBConstant.ROLE_ID) == roleID)
 				{
 					return true;
 				}
 			}
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in isTeamsPresent method  !\n");
 		}
-		
 		return false;
 	}
 	
@@ -99,16 +88,13 @@ public class RoleDBController
 
 		try 
 		{
-
 			statement = DBConnector.getConnection().prepareStatement(query);
-			statement.executeUpdate();
-			return true;
+			return (statement.executeUpdate() != 0);
 		} 
 		catch (SQLException e) 
 		{
 			return false;
 		}
-		
 	}
 	
 	public static boolean isRolePresent(String roleName)
@@ -120,25 +106,20 @@ public class RoleDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			while(result.next())
 			{
-				String role = result.getString(DBConstant.ROLE_NAME);
-				if(role.equalsIgnoreCase(roleName))
+				if(result.getString(DBConstant.ROLE_NAME).equalsIgnoreCase(roleName))
 				{
 					return true;
 				}
 			} 
-			
-			
 		} 
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getRoleName method  !");
 		}
-		
 		return false;
 	}
 	
@@ -146,7 +127,7 @@ public class RoleDBController
 	{
 		
 		ArrayList<Role> roles = new ArrayList<>();
-		Role role = null;
+		Role role;
 		String query = DBConstant.SELECT + " * "+ DBConstant.FROM + DBConstant.ROLE_TABLE 
 						+ DBConstant.WHERE + DBConstant.ROLE_ID +"!= 1" + DBConstant.ORDER_BY + DBConstant.ROLE_PRIORITY;
 		
@@ -163,7 +144,6 @@ public class RoleDBController
 				int priorityID = result.getInt(DBConstant.ROLE_PRIORITY);
 				role = new Role(roleID, roleName, priorityID);
 				roles.add(role);
-			
 			}
 			return roles;
 		} 
@@ -177,7 +157,7 @@ public class RoleDBController
 	{
 		
 		ArrayList<Role> roles = new ArrayList<>();
-		Role role = null;
+		Role role;
 		String query = DBConstant.SELECT + " * "+ DBConstant.FROM + DBConstant.ROLE_TABLE 
 						+ DBConstant.WHERE + DBConstant.ROLE_PRIORITY +"<"+previousID + DBConstant.AND + DBConstant.ROLE_ID + "!= 1" + DBConstant.ORDER_BY + DBConstant.ROLE_PRIORITY;
 		
@@ -194,7 +174,6 @@ public class RoleDBController
 				int priorityID = result.getInt(DBConstant.ROLE_PRIORITY);
 				role = new Role(roleID, roleName, priorityID);
 				roles.add(role);
-			
 			}
 			return roles;
 		} 
@@ -217,20 +196,16 @@ public class RoleDBController
 			
 			while(result.next())
 			{
-				int id = result.getInt(DBConstant.ROLE_PRIORITY);
-				
-				if(id == roleID)
+				if(result.getInt(DBConstant.ROLE_PRIORITY) == roleID)
 				{
 					return true;
 				}
 			}
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in checking role priority method  !\n");
 		}
-		
 		return false;
 	}
 	
@@ -240,19 +215,16 @@ public class RoleDBController
 		String query = DBConstant.UPDATE + DBConstant.ROLE_TABLE + DBConstant.SET 
 						+ DBConstant.ROLE_PRIORITY + " = " + DBConstant.ROLE_PRIORITY+ "+1 " 
 						+ DBConstant.WHERE + DBConstant.ROLE_PRIORITY + ">" + priorityID;
-
+		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
-			statement.executeUpdate();
-			return true;
+			return (statement.executeUpdate() != 0);
 		} 
 		catch (SQLException e) 
 		{
 			return false;
 		}
-		
 	}
 	
 	public static int isRoleAvailable()
@@ -268,7 +240,7 @@ public class RoleDBController
 			ResultSet result = statement.executeQuery();
 			result.next();
 			
-			roleCount = result.getInt(1); 	//if minimum one role is present in role table, it returns value 1
+			return result.getInt(1); 	//if minimum one role is present in role table, it returns value 1
 			 								//1 - column Index (count) 
 		} 
 		
@@ -276,7 +248,6 @@ public class RoleDBController
 		{
 			System.out.println(" Error occured in isRoleAvailable method  !");
 		}
-		
 		return roleCount;
 		
 	}
@@ -294,15 +265,12 @@ public class RoleDBController
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			int priorityID = result.getInt(DBConstant.ROLE_PRIORITY);
-			return priorityID;
-			
+			return result.getInt(DBConstant.ROLE_PRIORITY);		
 		} 
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getting priority id method  !");
 		}
-		
 		return 0;
 	}
 	
@@ -319,8 +287,7 @@ public class RoleDBController
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			int priorityID = result.getInt(1);
-			return priorityID;
+			return result.getInt(1);
 			
 		} 
 		catch (SQLException e) 
@@ -345,8 +312,7 @@ public class RoleDBController
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			int roleID = result.getInt(DBConstant.ROLE_ID);
-			return roleID;
+			return result.getInt(DBConstant.ROLE_ID);
 			
 		} 
 		catch (SQLException e) 
@@ -357,7 +323,6 @@ public class RoleDBController
 		return 0;
 	}
 	
-	
 	public static boolean setRoleID(int roleID, int employeeID)
 	{
 		
@@ -366,20 +331,12 @@ public class RoleDBController
 		
 		try 
 		{
-			
+
 			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			return (statement.executeUpdate() != 0);
 		} 
-		
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println(" Error occured in setting Role ID !");
 		}
 		return false;

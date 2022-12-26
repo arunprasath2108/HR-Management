@@ -20,18 +20,14 @@ public class WorkLocationDBController
 		
 		try 
 		{
-
 			statement = DBConnector.getConnection().prepareStatement(query);
-			statement.executeUpdate();
-			statement.close();
-			return true;
+			return (statement.executeUpdate() == 1);
 		} 
 		
 		catch (SQLException e) 
 		{
 			return false;
 		}
-		
 	}
 	
 	public static ArrayList<WorkLocation> getWorkLocation()
@@ -39,6 +35,7 @@ public class WorkLocationDBController
 		
 		ArrayList<WorkLocation> locations = new ArrayList<>();
 		WorkLocation location;
+		
 		String query = DBConstant.SELECT + " * "+ DBConstant.FROM 
 						+ DBConstant.WORK_LOCATION_TABLE;
 
@@ -55,7 +52,6 @@ public class WorkLocationDBController
 				location = new WorkLocation(locationId, locationName);
 				locations.add(location);
 			}
-			
 		} 
 		catch (SQLException e) 
 		{
@@ -63,7 +59,6 @@ public class WorkLocationDBController
 		}
 
 		return locations;
-		
 	}
 	
 	public static ArrayList<WorkLocation> getLocationExceptPreviousLocation(int locationID)
@@ -87,7 +82,6 @@ public class WorkLocationDBController
 				location = new WorkLocation(locationId, locationName);
 				locations.add(location);
 			}
-			
 		} 
 		catch (SQLException e) 
 		{
@@ -95,7 +89,6 @@ public class WorkLocationDBController
 		}
 
 		return locations;
-		
 	}
 	
 	public static boolean isWorkLocationPresent(int locationID)
@@ -112,15 +105,11 @@ public class WorkLocationDBController
 			
 			while(result.next())
 			{
-				
-				int id = result.getInt(DBConstant.LOCATION_ID);
-				
-				if(id == locationID)
+				if(result.getInt(DBConstant.LOCATION_ID) == locationID)
 				{
 					return true;
 				}
 			}
-			
 		} 
 		catch (SQLException e) 
 		{
@@ -128,7 +117,6 @@ public class WorkLocationDBController
 		}
 
 		return false;
-		
 	}
 	
 	public static String getLocationName(int locationID)
@@ -139,20 +127,15 @@ public class WorkLocationDBController
 		
 		try 
 		{
-			
 			statement = DBConnector.getConnection().prepareStatement(query);
 			ResultSet result = statement.executeQuery();
 			result.next();
-			String locationName = result.getString(DBConstant.LOCATION_NAME);
-			return locationName;
-			
+			return result.getString(DBConstant.LOCATION_NAME);
 		} 
-		
 		catch (SQLException e) 
 		{
 			System.out.println(" Error occured in getting Location Name !");
 		}
-		
 		return null;
 	}
 
@@ -165,20 +148,13 @@ public class WorkLocationDBController
 		
 		try 
 		{
-			
-			statement = DBConnector.getConnection().prepareStatement(query);
-			int result = statement.executeUpdate();
-			
-			if(result == 1)
-			{
-				return true;
-			}
-			
+			statement = DBConnector.getConnection().prepareStatement(query);			
+			return (statement.executeUpdate() != 0);
 		} 
 		
 		catch (SQLException e) 
 		{
-			System.out.println(" Error occured in setting location ID !");
+			System.out.println(" Error occured in setting location!");
 		}
 		return false;
 	}

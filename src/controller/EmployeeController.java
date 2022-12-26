@@ -2,7 +2,7 @@ package controller;
 
 import java.util.*;
 import dbController.*;
-import model.Employee;
+import model.*;
 import utils.*;
 import viewController.*;
 
@@ -29,6 +29,15 @@ public class EmployeeController
 	private static final int BACK_MENU = 6;
 	
 	
+	private static final int BE_BTECH = 1;
+	private static final int ME_MTECH = 2;
+	private static final int ARTS = 3;
+	
+	private static final int CONFIRM = 1;
+	private static final int BACK = 2;
+
+	
+	
 	//stops the method while wrong inputs exceeds 3 times
 	int inputLimit = 0;
 	
@@ -43,29 +52,28 @@ public class EmployeeController
 			return;
 		}
 		
-		EmployeeValidation.checkProfileCompleted(userID);
+		EmployeeValidation.isProfileIncomplete(userID);
 		
 		employeeView.listEmployeeMenu(userID);
 		System.out.println(" 5. LogOut.");
 		Utils.printSpace();
-		Utils.printEnterOption();
+		Utils.printMessage(StringConstant.ENTER_OPTION);
 		
 		try 
 		{
 			int userInput = Utils.getIntInput();
 			
-			Employee employee = EmployeeDBController.getEmployee(userID);
+			Employee employee = Utils.getEmployee(userID);
 			
-			if(getInputFromEmployee(userInput, employee))
+			if(getInputFromEmployee(userInput, employee))  //true - logout
 			{
 				return;
 			}
-			
 		}
 		catch(InputMismatchException e)
 		{
 			inputLimit++;
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			Utils.scanner.nextLine();
 		}
 		
@@ -100,64 +108,340 @@ public class EmployeeController
 				return true;
 				
 			default:
-				inputLimit++;
-				Utils.printInvalidInputMessage();
-				return false;
+				if( !inputLimitChecker(StringConstant.INVALID_INPUT))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					return false;
+				}
+				return true;
 				
 		}
 		
 	} 
 	
+	
+	
 	private void getInputForEdit(Employee employee)
 	{
+		
 		int employeeID = employee.getemployeeID();
+		Utils.printMessage(StringConstant.ENTER_OPTION);
+		int userInput = employeeView.getInputFromEmployee();
 		
-		Utils.printEnterOption();
-		
-		try
+		switch(userInput)
 		{
-			int userInput = Utils.getIntInput();
-			
-			switch(userInput)
+			case EDIT_MOBILE_NUM :
+				editMobileNumber(employeeID); 
+				break;
+				
+			case EDIT_EMAIL :
+				editMailID(employeeID);   
+				break;
+				
+			case EDIT_ADDRESS :    
+				editAddress(employeeID);
+				break;
+				
+			case EDIT_WORK :   
+				editWorkExperience(employeeID);
+				break;
+				
+			case EDIT_STUDIES :   
+				editQualification(employeeID);
+				break;
+				
+			case BACK_MENU :
+				return;
+				
+			default :
+				if(! inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					getInputForEdit(employee);
+				}
+				return;
+		}
+		employeeView.displayPersonalInfo(Utils.getEmployee(employeeID));
+	}
+	
+	
+	private void editMobileNumber(int employeeID)
+	{
+		
+		String mobileNumber = employeeView.getMobileNum();
+		
+		if( !EmployeeValidation.isMobileNumberValid(mobileNumber) )
+		{
+				Utils.printMessage(StringConstant.INVALID_MOBILE_NUMBER);
+		}
+		else
+		{
+			if(PersonalDBController.setMobileNumber(mobileNumber, employeeID))
 			{
-					case EDIT_MOBILE_NUM :
-//						editMobileNum(employeeID); 
-						break;
-						
-					case EDIT_EMAIL :
-//						editMailID(employeeID);   
-						break;
-						
-					case EDIT_ADDRESS :    
-//						editAddress(employee);
-						break;
-						
-					case EDIT_WORK :   
-//						editWorkExperience(employee);
-						break;
-						
-					case EDIT_STUDIES :   
-//						editHighestQualification(employee);
-						break;
-						
-					case BACK_MENU :
-						break;
-						
-					default :
-							Utils.printInvalidInputMessage();
-							break;
-							
+				Utils.printMessage(StringConstant.MOBILE_NUMBER_ADDED_SUCCESSFUL);
+				return;
 			}
-		
 		}
-		catch(InputMismatchException e)
+		
+		if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
 		{
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();	
+			Utils.printMessage(StringConstant.INVALID_INPUT);
+			editMobileNumber(employeeID);
+		}
+	}
+	
+	private void editMailID(int employeeID)
+	{
+		
+		String mailID = employeeView.getPersonalMail();
+		
+		if(EmployeeValidation.isEmailValid(mailID))
+		{
+			if( !EmployeeValidation.isOfficialMailExists(mailID) && !EmployeeValidation.isPersonalMailExists(mailID))
+			{
+				if(PersonalDBController.setPersonalMail(mailID, employeeID))
+				{
+					Utils.printMessage(StringConstant.MAIL_ADDED_SUCCESSFUL);
+				}
+				else
+				{
+					Utils.printMessage(StringConstant.EDIT_PERSONAL_INFO_FAILED);
+				}
+			}
+			else
+			{
+				Utils.printMessage(StringConstant.DUPLICATE_PERSONAL_MAIL);
+			}
+		}
+		else
+		{
+			if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_MAIL_ID);
+				editMailID(employeeID);
+			}
+		}
+	}
+	
+	boolean inputLimitChecker(String message)
+	{
+		inputLimit++;
+		if(inputLimit == 3)
+		{
+			inputLimit = 0;
+			Utils.printMessage(message);
+			return true;
+		}
+		return false;
+	}
+
+
+	private void editAddress(int employeeID)
+	{
+		
+		String address = employeeView.getAddress();
+		
+		if(PersonalDBController.setAddress(address, employeeID))
+		{
+			Utils.printMessage(StringConstant.ADDRESS_ADDED_SUCCESSFUL);
+			return;
+		}
+		else
+		{
+			Utils.printMessage(StringConstant.EDIT_PERSONAL_INFO_FAILED);
+		}
+	}
+	
+	
+	
+	private void editQualification(int employeeID)
+	{
+			
+		String degree = getDegreeInput();
+		if( degree == null) { return; }
+		
+		String passedOut = getPassedOutYear(); 
+		if(passedOut == null) { return; }
+		
+		if(PersonalDBController.setHigherQualification(degree, passedOut, employeeID))
+		{
+			Utils.printMessage(StringConstant.EDUCATION_ADDED_SUCCESSFUL);
+		}
+		else
+		{
+			Utils.printMessage(StringConstant.INVALID_QUALIFICATION);
+		}
+	}
+	
+	
+	
+	public String getDegreeInput()
+	{
+		
+		String degree = null;
+		int userInput = employeeView.getQualification();
+		
+		switch(userInput)
+		{
+		
+			case BE_BTECH :
+				return "B.E/B.Tech";
+				
+			case ME_MTECH :
+				return "M.E/M.Tech";
+				
+			case ARTS :
+				return "Arts&Science";
+				
+			default :
+				if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					return getDegreeInput();
+				}
+		}
+		return degree;
+	}
+	
+	public String getPassedOutYear()
+	{
+		
+		String passedOut = employeeView.passedOutYear();
+		
+		if(EmployeeValidation.isPassedOutYearValid(passedOut))
+		{
+			return passedOut;
+		}
+		else
+		{
+			if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_INPUT);
+				getPassedOutYear();
+			}
+		}
+		return null;
+	}
+	
+	public void editWorkExperience(int employeeID)
+	{
+		
+		String companyName = employeeView.getCompanyName();
+		String roleInCompany = employeeView.getCompanyRole();
+		int experienceYears = getYearsOfExperience();
+		int experienceMonths = getMonthsOfExperience();
+		
+		if(experienceYears == 0 && experienceMonths == 0)
+		{
+			return;
 		}
 		
-		System.out.println(employee.getemployeeID());
-		employeeView.displayPersonalInfo(EmployeeDBController.getEmployee(employee.getemployeeID()));
+		String experience = convertExperienceIntoStringFormat(experienceYears, experienceMonths);
+		
+		WorkExperience work = new WorkExperience(companyName, roleInCompany, experience);
+		
+		if(confirmBeforeAddExperience(work) == 0)
+		{
+			Utils.printMessage(StringConstant.EDIT_PERSONAL_INFO_FAILED);
+			return;
+		}
+		
+		if(WorkExperienceDBController.addWorkExperience(employeeID, work))
+		{
+			Utils.printMessage(StringConstant.WORK_ADDED_SUCCESSFUL);
+		}
+		else
+		{
+			Utils.printMessage(StringConstant.EDIT_PERSONAL_INFO_FAILED);
+		}
+	}
+	
+	private int confirmBeforeAddExperience(WorkExperience work)
+	{
+		ArrayList<WorkExperience> works = new ArrayList<>();
+		works.add(work);
+		employeeView.listWorkExperience(works);
+		
+		int userInput = employeeView.confirmBeforeAddExperience();
+		
+		switch(userInput)
+		{
+			case CONFIRM :
+				return 1;
+				
+			case BACK :
+				return 0;
+				
+			default :
+				if(! inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					confirmBeforeAddExperience(work);
+				}
+				return 0;
+		}
+	}
+	
+
+	private int getYearsOfExperience()
+	{
+
+		int years = employeeView.getYearsOfExperience();
+		
+		if( EmployeeValidation.isExperienceYearValid(years))
+		{
+			return years;
+		}
+		else
+		{
+			
+			if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_INPUT);
+				getYearsOfExperience();
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		return 0;
+		
+	}
+	
+	private int getMonthsOfExperience()
+	{
+		
+		int months = employeeView.getMonthsOfExperience();
+		
+		if( EmployeeValidation.isExperienceMonthValid(months))
+		{
+			return months;
+		}
+		else
+		{
+			
+			if( !inputLimitChecker(StringConstant.EDIT_PERSONAL_INFO_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_INPUT);
+				getMonthsOfExperience();
+			}
+			else
+			{
+				return 0;
+			}
+		}
+		return 0;
+	}
+	
+	private String convertExperienceIntoStringFormat(int years, int months)
+	{
+		
+		String year = Integer.toString(years);
+		String month = Integer.toString(months);
+		
+		String experience = year + " years and " + month + " months";
+		return experience;
 
 	}
 	
@@ -178,73 +462,10 @@ public class EmployeeController
 	
 	
 	
-	
-	
-	
-//	private void editMobileNum(int employeeID)
-//	{
-//		
-//		String number = employeeView.getMobileNum();
-//		
-//		if( !EmployeeValidation.isMobileNumberValid(number) )
-//		{
-//				Utils.printSpace();
-//				System.out.println("  * INVALID MOBILE NUMBER * \n");
-//		}
-//		else
-//		{
-//			if(PersonalDBController.setMobileNumber(number, employeeID))
-//			{
-//				System.out.println("   ~ Mobile Number added successful \n");
-//			}
-//		}
-//		
-//	}
-//
-//	
-//	private void editMailID(int employeeID)
-//	{
-//		
-//		
-//		String mailID = employeeView.getPersonalMail();
-//		
-//		if(EmployeeValidation.isEmailValid(mailID))
-//		{
-//			
-//			if(PersonalDBController.setPersonalMail(mailID, employeeID))
-//			{
-//				System.out.println("   ~ Mail ID added successful");
-//			}
-////			editPersonalInfo(employee);
-//		}
-//		else
-//		{
-//			Utils.printSpace();
-//			System.out.println(" * Invalid Mail ID *");
-////			editPersonalInfo(employee);
-//		}
-//	}
+
+
 		
-//	private static void editAddress(Employee employee)
-//	{
-//		
-//		System.out.println(" Enter your Address in the below format.");
-//		Utils.printSpace();
-//		System.out.println(" Home Address, Street, City");
-//		Utils.printSpace();
-//		System.out.println(" sample address ->  1/12, Northcut Road, Coimbatore");
-//		Utils.printSpace();
-//		
-//		String address = Utils.getStringInput();
-//		Utils.printSpace();
-//		employee.setAddress(address);
-//		
-//		System.out.println("   ~ Address added successful");
-//		editPersonalInfo(employee);
-//		
-//	}
-//	
-//	
+
 //	private static void editWorkExperience(Employee employee)
 //	{
 //		
@@ -296,103 +517,8 @@ public class EmployeeController
 //		}
 //		
 //	}
-//	
-//	private static void editHighestQualification(Employee employee)
-//	{
-//		
-//		System.out.println(" Enter your Qualification");
-//		Utils.printSpace();
-//		System.out.println(" 1. B.E / B.Tech ");
-//		System.out.println(" 2. M.E / M.Tech ");
-//		System.out.println(" 3. Arts Stream (Bsc / Msc / BA)");
-//		
-//		try
-//		{
-//			Utils.printSpace();
-//			System.out.println(" Choose a option.");
-//			Utils.printSpace();
-//			String degree = getDegreeInput();
-//			Utils.printSpace();
-//			
-//			if( degree == null)
-//			{
-//				EmployeeManager.editPersonalInfo(employee);
-//				return;
-//			}
-//			
-//			String passedOut = getPassedOutYear();
-//			Utils.printSpace();
-//
-//			String studiesInfo = degree+" - "+passedOut+" passed out";
-//			employee.setEducation(studiesInfo);
-//			System.out.println("   ~ Educational Qualifications added successful");
-//			EmployeeManager.editPersonalInfo(employee);
-//			return;
-//				
-//		}
-//			
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();	
-//			editHighestQualification(employee);
-//			return;
-//			
-//		}
-//		
-//	}
-//	
-//	public static String getDegreeInput()
-//	{
-//		
-//		String degree = null;
-//		int userInput = Utils.getIntInput();
-//		Utils.printSpace();
-//		
-//		switch(userInput)
-//		{
-//		
-//			case BE_BTECH :
-//				degree = "B.E/B.Tech";
-//				return degree;
-//				
-//			case ME_MTECH :
-//				degree = "M.E/M.Tech";
-//				return degree;
-//				
-//			case ARTS :
-//				degree = "Arts&Science";
-//				return degree;
-//				
-//			default :
-//				Utils.printInvalidInputMessage();
-//				return degree = getDegreeInput();
-//			
-//		}
-//		
-//	}
-//	
-//	public static String getPassedOutYear( )
-//	{
-//		
-//		System.out.println(" Passed Out year     Format  -> [ yyyy ]");
-//		String passedOut = Utils.getStringInput();
-//		Utils.printSpace();
-//		
-//		if(EmployeeValidation.isPassedOutYearValid(passedOut))
-//		{
-//			return passedOut;
-//		}
-//		else
-//		{
-//			
-//			System.out.println(" Year must be greater than 1985 or equals to Present Year.");
-//			Utils.printSpace();
-//			return getPassedOutYear();
-//		}
-//		
-//	}
-	
+
+
 	
 	
 	

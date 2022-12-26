@@ -14,80 +14,44 @@ public class EmployeeValidation
 	public static boolean isEmployeePresent(int userID)
 	{
 		
-		if(EmployeeDBController.isEmployeePresent(userID))
-		{
-			return true;
-		}
-		
-		return false;
+		return EmployeeDBController.isEmployeePresent(userID);
 	} 
 	
 	public static boolean isTeamsAvailable()
 	{
 		
-		if(TeamDBController.isTeamsAvailable() == 1)
-		{
-			return true;
-		}
-		
-		return false;
+		return (TeamDBController.isTeamsAvailable() == 1);
 	} 
 	
-	
-	
+
 	public static boolean isTeamIdPresent(int id)
 	{
 		
-		if(TeamDBController.isTeamPresent(id))
-		{
-			return true;
-		}
-		
-		return false;
+		return TeamDBController.isTeamPresent(id);
 	}
 	
-	public static boolean isEmployeeInTeam(int teamID, int userInput)
+	public static boolean isEmployeeInTeam(int teamID, int employeeID)
 	{
 		
-		if(TeamDBController.isEmployeeInTeam(teamID, userInput) == userInput)
-		{
-			return true;
-		}
-		
-		return false;
+		return (TeamDBController.isEmployeeInTeam(teamID, employeeID) == employeeID );
 	}
 	
 	public static boolean isRoleIdPresent(int roleID)
 	{
 		
-		if(RoleDBController.isRoleIdPresent(roleID))
-		{
-			return true;
-		}
-		
-		return false;
+		return RoleDBController.isRoleIdPresent(roleID);
 	}
 	
 	public static boolean isWorkLocationPresent(int input)
 	{
 		
-		if(WorkLocationDBController.isWorkLocationPresent(input))
-		{
-			return true;
-		}
-		
-		return false;
+		return WorkLocationDBController.isWorkLocationPresent(input);
 	}
 
 	public static boolean isRolePriorityPresent(int input)
 	{
 		
-		if(RoleDBController.isRolePriorityPresent(input))
-		{
-			return true;
-		}
-		
-		return false;
+		return RoleDBController.isRolePriorityPresent(input);
 	}
 	
 	public static boolean isDateValid(String date1, Date date2)
@@ -99,21 +63,17 @@ public class EmployeeValidation
         
 		try
 		{
-			
 			joiningDate = simpleDateformat.parse(date1);
 
             long diff = todayDate.getTime() - joiningDate.getTime();
 
             long diffDays = diff / (24 * 60 * 60 * 1000);
 
-            if(diffDays >=0 && diffDays <7) 
-            {
-            	return true;
-            }
+            return (diffDays >=0 && diffDays <7);
         } 
 		catch (ParseException e) 
 		{
-            e.printStackTrace();
+            System.out.println(" Error in is Date Valid or not method\n");
         }
 		return false;
 	}
@@ -134,12 +94,12 @@ public class EmployeeValidation
 		
 	}
 	
+	
 	public static boolean isInputNameValid(String name) 
 	{
 		
-		 String input = name;
-		 Pattern pattern = Pattern.compile("^[A-Za-z]{2,}");
-		 Matcher matcher = pattern.matcher(input);
+		 Pattern pattern = Pattern.compile("^[A-Za-z]{1,}[\\s]{0,1}[A-Za-z\\s]{1,20}");
+		 Matcher matcher = pattern.matcher(name);
 		 
 		 while(matcher.find())
 		 {
@@ -153,9 +113,8 @@ public class EmployeeValidation
 	public static boolean isDateFormatValid(String date) 
 	{
 		
-		 String input = date;
 		 Pattern pattern = Pattern.compile("^[0-9]{1,2}/{1}[0-9]{1,2}/[0-9]{4}$");
-		 Matcher matcher = pattern.matcher(input);
+		 Matcher matcher = pattern.matcher(date);
 		 
 		 while(matcher.find())
 		 {
@@ -169,9 +128,8 @@ public class EmployeeValidation
 	public static boolean isEmailValid(String mailID)
 	{
 		
-		String mail = mailID;
 		Pattern pattern = Pattern.compile("(^[a-z]{1,})(\\.?)([a-z0-9]{2,64})@{1}([a-z0-9]{2,10})\\.{1}[a-z0-9]{2,5}(\\.?)([a-z]{2,10})?");
-		Matcher matcher = pattern.matcher(mail);
+		Matcher matcher = pattern.matcher(mailID);
 		
 		while(matcher.find())
 		{
@@ -182,50 +140,37 @@ public class EmployeeValidation
 		
 	}
 
-
 	public static boolean isOfficialMailExists(String mail)
 	{
 		
-		if(EmployeeDBController.isOfficialMailExist(mail))
-		{
-			return true;
-		}
-		
-		return false;
-		
+		return EmployeeDBController.isOfficialMailExist(mail);
 	}
 	
-	public static void checkProfileCompleted(int employeeID) 
+	public static boolean isPersonalMailExists(String mail)
+	{
+		
+		return PersonalDBController.isPersonalMailExist(mail);
+	}
+	
+	
+	
+	 public static void isProfileIncomplete(int userID)
 	 {
-		 		
-	 	if( !EmployeeValidation.isPersonalDetailUpdated(employeeID))
-	 	{
-	 		Utils.printSpace();
-	 		System.out.println("   * PROFILE IS INCOMPLETE * ");
-	 		Utils.printSpace();
-	 	}		
+		 
+		 if( PersonalDBController.isProfileIncomplete(userID))    
+		 {														  
+			 Utils.printSpace();
+			 System.out.println("    * PROFILE IS INCOMPLETE * ");
+			 Utils.printSpace();
+		 }
 	 }
-	
-
-	public static boolean isPersonalDetailUpdated(int employeeID)
-	{
-		
-		if(PersonalDBController.isPersonalInfoUpdated(employeeID))
-		{
-			return false;
-		}
-
-		return true;
-		
-	}
 		
 	
-	public static boolean isMobileNumberValid(String mobileNum)
+	public static boolean isMobileNumberValid(String mobileNumber)
 	{
 		
-		 String number = mobileNum;
 		 Pattern pattern = Pattern.compile("^[6-9]{1}[0-9]{9}$");
-		 Matcher matcher = pattern.matcher(number);
+		 Matcher matcher = pattern.matcher(mobileNumber);
 		 
 		 while(matcher.find())
 		 {
@@ -233,6 +178,47 @@ public class EmployeeValidation
 		 }
 		return false;
 		
+	}
+	
+	public static boolean isPassedOutYearValid(String year)
+	{
+		
+		try
+		{
+			int passOut = Integer.parseInt(year);
+			return ( passOut >= 1985 && passOut <=2025);
+		}
+		catch(NumberFormatException e)
+		{
+			return false;
+		}
+
+	}
+	
+	public static boolean isExperienceYearValid(int years)
+	{
+		
+		if(years >= 0 && years <=20)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	public static boolean isExperienceMonthValid(int month)
+	{
+		
+		if(month >= 3 && month <=11)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
       
 	
@@ -261,137 +247,9 @@ public class EmployeeValidation
 	
 
 
-//	
-//
-//	public static boolean isEmailValid(String mailID)
-//	{
-//		
-//		String mail = mailID;
-//		Pattern pattern = Pattern.compile("(^[a-z]{1,})(\\.?)([a-z0-9]{2,64})@{1}([a-z0-9]{2,10})\\.{1}[a-z0-9]{2,5}(\\.?)([a-z]{2,10})?");
-//		Matcher matcher = pattern.matcher(mail);
-//		
-//		while(matcher.find())
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//		
-//	}
-//	
-//	
 
-//	
-//	
-//	public static boolean isPassedOutYearValid(String year)
-//	{
-//		try
-//		{
-//			int passOut = Integer.parseInt(year);
-//			
-//			if( passOut >= 1985 && passOut <=2024)
-//			{
-//				return true;
-//			}
-//		}
-//		catch(NumberFormatException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			return false;
-//		}
-//		
-//		return false;
-//
-//		
-//	}
-//	
-//	
-//	public static boolean isTeamAlreadyExists(String name)
-//	{
-//		
-//		if(Resource.teamMap.containsValue(name.toUpperCase()))
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//		
-//	}
-//	
-//	public static boolean isTeamIDAlreadyExists(int id)
-//	{
-//		
-//		if(Resource.teamMap.containsKey(id))
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//	}
-//	
-//
-//	public static boolean isExperienceYearValid(String userInput)
-//	{
-//		
-//		
-//			try
-//			{
-//				 int year = Integer.parseInt(userInput);
-//				
-//				 if(year <= 20 && year >= 0)
-//				 {
-//					 return true;
-//				 }
-//			}
-//			catch(NumberFormatException e)
-//			{
-//				return false;
-//			}
-//			
-//			 return false;
-//		
-//	}
-//	
-//	public static boolean isOfficialMailExists(String mail)
-//	{
-//		
-//		for( String mails : Resource.officialMail)
-//		{
-//			if( mails.equalsIgnoreCase(mail))
-//			{
-//				return true;
-//			}
-//			
-//		}
-//
-//		return false;
-//		
-//	}
-//	
-//	
-//	public static boolean isRequestsEmpty(Employee employee)
-//	{
-//		
-//		if(employee.getRequests().isEmpty())
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//	}
-//	
-//	public static boolean isNotificationEmpty(Employee employee)
-//	{
-//		
-//		if(employee.getNotification().isEmpty())
-//		{
-//			return true;
-//		}
-//		
-//		return false;
-//	}
-//
-//
+
+
 
 
 	

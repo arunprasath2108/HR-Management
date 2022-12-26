@@ -29,7 +29,6 @@ public class DBConnector
 			{
 				System.out.println("  Can't Register Driver");
 			}
-			
 		} 
 		catch(SQLException e) 
 		{

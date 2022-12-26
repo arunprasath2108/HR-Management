@@ -21,9 +21,7 @@ public class LoginController
 		while(true)
 		{
 			
-			
-			
-			 Utils.printEnterOption();
+			 Utils.printMessage(StringConstant.ENTER_OPTION);
 			 System.out.println(" 1. Login");
 			 System.out.println(" 2. Exit ");
 			 Utils.printSpace();
@@ -45,16 +43,14 @@ public class LoginController
 				 			return;
 				 			
 				 		default :
-				 			Utils.printInvalidInputMessage();
+							Utils.printMessage(StringConstant.INVALID_INPUT);
 				}
 			 }
-			 
 			 catch(InputMismatchException e)
 			 {
-		 			Utils.printInvalidInputMessage();
+					Utils.printMessage(StringConstant.INVALID_INPUT);
 		 			Utils.scanner.nextLine();
 			 }
-			 
 		 } 
 	}
 	
@@ -62,27 +58,26 @@ public class LoginController
 	{	
 		try
 		{
-			Utils.printDefaultHRId();
-			Utils.printEnterUserID();
+			Utils.printMessage(StringConstant.DEFAULT_HR);
+			Utils.printMessage(StringConstant.ENTER_USER_ID);
+			
 			int userID = Utils.getIntInput();
 	
 			if (EmployeeValidation.isEmployeePresent(userID))
 			{
 				loginAsUser(userID);
 			}
-			
 			else 
 			{
-				Utils.printLoginFailMessage();
+				Utils.printMessage(StringConstant.INVALID_ID);
 			}
 		}
 		
 		catch(InputMismatchException e)
 		{
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			Utils.scanner.nextLine();
 		}
-	
 	}
 
 	private static void loginAsUser(int userID) 
@@ -98,20 +93,18 @@ public class LoginController
 			HRController hr = new HRController();
 			hr.listEmployeeMenu();
 		}
-		
 		else if(leastRoleID == roleID && RoleDBController.getRoleName(roleID).equalsIgnoreCase("PT"))
 		{
-//			EmployeeController employee = new EmployeeController();
-//			employee.listPTMenu(userID);
+			EmployeeController employee = new EmployeeController();
+			employee.listPTMenu(userID);
 		}
-		
 		else
 		{
-//			SeniorEmployeeController seniorEmployee = new SeniorEmployeeController();
-//			seniorEmployee.listEmployeeMenu(userID);
+			SeniorEmployeeController seniorEmployee = new SeniorEmployeeController();
+			seniorEmployee.listEmployeeMenu(userID);
 		}
 		
-		Utils.printLogOutMessage();
+		Utils.printMessage(StringConstant.LOG_OUT);
 	}
 
 }

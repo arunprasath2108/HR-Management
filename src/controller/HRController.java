@@ -2,6 +2,7 @@ package controller;
 
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -14,15 +15,15 @@ import viewController.*;
 public class HRController
 {
 	
-	//creating object for HR viewController
-	HRViewController hrView = new HRViewController();
+	 //creating object for HR viewController
+	 HRViewController hrView = new HRViewController();
 	
-	//creating object for Employee viewController
-	EmployeeViewController employeeView = new EmployeeViewController();
+	 //creating object for Employee viewController
+	 EmployeeViewController employeeView = new EmployeeViewController();
 	
-	//creating object for Senior Employee Controller
-	SeniorEmployeeController seniorEmployeeController = new SeniorEmployeeController();
-	
+	 //creating object for Senior Employee Controller
+	 SeniorEmployeeController seniorEmployeeController = new SeniorEmployeeController();
+
 	
 	 // getInputFromHR method 
 	 private static final int ADD_TEAM = 1;
@@ -34,12 +35,10 @@ public class HRController
 	 private static final int REQUESTS = 7;
 	 private static final int LOG_OUT = 8;
 	 
-	 
 	 //Gender Input
 	 private static final int MALE = 1;
 	 private static final int FEMALE = 2;
 	 private static final int OTHERS = 3;
-	 
 	 
 	 //Edit Employee Details
 	 private static final int EDIT_TEAM_NAME = 1;
@@ -48,10 +47,11 @@ public class HRController
 	 private static final int EDIT_LOCATION = 4;
 	 private static final int BACK_MENU = 5;
 	 
-	 
 	 //process Edit
 	 private static final int CONFIRM = 1;
 	 private static final int BACK = 2;
+	 
+	 private static final int VIEW_REQUEST = 1;
 	 
 	 
 	 //stop the method for wrong input more than 3 times
@@ -61,8 +61,8 @@ public class HRController
 	 
 	public void listEmployeeMenu()
 	{
-		
-		hrView.displayHrMenu();
+		int requestCount = requestCountForHR();
+		hrView.displayHrMenu(requestCount);
 		getInputFromHR();
 	}
 	
@@ -100,6 +100,7 @@ public class HRController
 				 break;
 				 
 			 case REQUESTS :
+				 requests();
 				 break;
 				 
 			 case LOG_OUT :
@@ -112,13 +113,22 @@ public class HRController
 					 inputLimit = 0;
 					 return;
 				 }
-				 Utils.printInvalidInputMessage();
+				Utils.printMessage(StringConstant.INVALID_INPUT);
 		 }
 		 listEmployeeMenu();	 
 	}
 	
+	public int requestCountForHR()
+	{
+		
+		ArrayList<Request>  requests = RequestDBController.getRequestsForHR();
+
+		return requests.size();
+	}
+	
 	public void addTeam()
 	{
+		
 		String teamName = hrView.getTeamName();
 		
 		if(EmployeeValidation.isInputNameValid(teamName))
@@ -127,16 +137,17 @@ public class HRController
 			
 			if(TeamDBController.addTeam(team))
 			{
-				hrView.isTeamAddedSuccessful(1, teamName);
+				Utils.printMessage(StringConstant.TEAM_ADDED_SUCCESS + teamName);
 			}
 			else
 			{
-				hrView.isTeamAddedSuccessful(2, teamName);
+				Utils.printMessage("  "+teamName+StringConstant.ALREADY_EXIST);
+				Utils.printMessage(StringConstant.TRY_AGAIN);
 			}
 		}
 		else
 		{
-			hrView.isTeamAddedSuccessful(3, teamName);
+			Utils.printErrorMessageInAdd();
 		}
 	}
 	
@@ -146,7 +157,7 @@ public class HRController
 		//check if atleast two role is present in Table
 		if(RoleDBController.isRoleAvailable() < 2 )
 		{
-			hrView.isRoleAddedSuccessful(4, "");
+			Utils.printMessage(StringConstant.ADD_ROLE_FAILED);
 			return;
 		}
 		
@@ -154,81 +165,72 @@ public class HRController
 		
 		if(roleName == null)
 		{
-			hrView.isRoleAddedSuccessful(3, roleName);
+			Utils.printErrorMessageInAdd();
 			return;
 		}
 		
 		if(RoleDBController.isRolePresent(roleName))
 		{
-			hrView.isRoleAddedSuccessful(2, roleName);
+			Utils.printMessage("  "+roleName+StringConstant.ALREADY_EXIST);
+			Utils.printMessage(StringConstant.TRY_AGAIN);
 			return;
 		}
 		
-		int previousID = getPreviousRolePriority();
+		//get already exist role id to insert new role in between
+		int previousID = getPreviousRolePriority();  
+
 		if(previousID == 0)
 		{ 
-			hrView.isRoleAddedSuccessful(4, roleName);
+			Utils.printMessage(StringConstant.ADD_ROLE_FAILED);
+			return;
 		}
-		
-		if(RoleDBController.changeRolePriority(previousID))
+		   
+		//if priority ID is least Role ID, then add at last
+		if(previousID == RoleDBController.getRolePriority(RoleDBController.getLeastRoleID()))
 		{
 			previousID++;
 			Role role = new Role(roleName, previousID);
-			
 			if(RoleDBController.addRole(role))
 			{
-				hrView.isRoleAddedSuccessful(1, roleName);
-			}
-			else
-			{
-				hrView.isRoleAddedSuccessful(4, roleName);
+				Utils.printMessage(StringConstant.ROLE_ADDED_SUCCESS + roleName);
+				return;
 			}
 		}
-		else
+		if(RoleDBController.changeRolePriority(previousID))
 		{
-			hrView.isRoleAddedSuccessful(4, roleName);
+			
+			previousID++;  //shifting all role & ( rolePriority ID + 1) to next position
+			Role role = new Role(roleName, previousID);
+
+			if(RoleDBController.addRole(role))
+			{
+				Utils.printMessage(StringConstant.ROLE_ADDED_SUCCESS + roleName);
+				return;
+			}
 		}
+			Utils.printMessage(StringConstant.ADD_ROLE_FAILED);
 	}
 	
 	private int getPreviousRolePriority()
 	{
 		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			return 0;
-		}
-		
 		ArrayList<Role> roles = RoleDBController.listRole();
 		hrView.displayRolePriority(roles);
 		int userInput = hrView.getRolePriority();
-		
-		try
+
+		if(EmployeeValidation.isRolePriorityPresent(userInput))  
 		{
-			
-			if(EmployeeValidation.isRolePriorityPresent(userInput))
-			{
-				return userInput;
-			}
-			else
-			{
-				inputLimit++;
-				Utils.printInvalidInputMessage();
-				return getPreviousRolePriority();
-			}
-			
+			return userInput;
 		}
-		
-		catch(InputMismatchException e)
+
+		if( !inputLimitReached(StringConstant.INVALID_INPUT))
 		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();
 			return getPreviousRolePriority();
 		}
-		
-		
+		return 0;
+
 	}
+	
 	
 	private void addWorkLocations()
 	{
@@ -241,16 +243,17 @@ public class HRController
 			
 			if(WorkLocationDBController.addWorkLocation(location))
 			{
-				hrView.isLocationAddedSuccessful(1, locationName);
+				Utils.printMessage(StringConstant.LOCATION_ADDED_SUCCESS);
 			}
 			else
 			{
-				hrView.isLocationAddedSuccessful(2, locationName);
+				Utils.printMessage("  "+locationName+StringConstant.ALREADY_EXIST);
+				Utils.printMessage(StringConstant.TRY_AGAIN);
 			}
 		}
 		else
 		{
-			hrView.isLocationAddedSuccessful(3, locationName);
+			Utils.printMessage(StringConstant.ADD_LOCATION_FAILED);
 		}
 	}
 	
@@ -267,7 +270,7 @@ public class HRController
 		int teamID = seniorEmployeeController.getTeamID();
 		if(teamID == 0) 
 		{
-			Utils.printFailedToAddEmployee();
+			Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 			return;
 		} //exit the method when the Team ID is null
 
@@ -285,13 +288,12 @@ public class HRController
 		int reportingID = getReportingID(teamID, rolePriority);
 		if(reportingID == 0) 
 		{
-			Utils.printFailedToAddEmployee();
+			Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 			return;
 		}
 		
 		Date doj = getJoiningDate();
 		if(doj == null) { return; };
-		
 		 
 		int workLocation = getWorkLocationID();
 		if(workLocation == 0) { return; };
@@ -316,9 +318,7 @@ public class HRController
 		if(EmployeeDBController.addEmployee(employee))
 		{
 			hrView.isEmployeeAddedSuccessful(true);
-			
-			//creates a Row in Personal Info table for this specific employee
-			PersonalDBController.createRow(EmployeeDBController.getEmployeeID(name));
+			createRowInDB(name);
 			employeeView.displayProfile(employee);
 		}
 		else
@@ -327,12 +327,19 @@ public class HRController
 		}
 	}
 
+	void createRowInDB(String name)
+	{
+		//creates a Row in Personal Info table for this specific employee
+		PersonalDBController.createRowInPersonalInfoTable(EmployeeDBController.getEmployeeID(name));
+		
+	}
 	
 	private int getEmployeeRole()
 	{
 		
 		hrView.displayRoles(RoleDBController.listRole());
 		int userInput = hrView.getRoleID();
+		
 		if(EmployeeValidation.isRoleIdPresent(userInput))
 		{
 			return userInput;
@@ -343,13 +350,14 @@ public class HRController
 			if(inputLimit == 3)
 			{
 				inputLimit = 0;
-				Utils.printFailedToAddEmployee();
+				Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 				return 0;
 			}
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			return getEmployeeRole();
 		}
 	}
+	
 	
 	private String getNameInput()
 	{
@@ -366,10 +374,10 @@ public class HRController
 			if(inputLimit == 3 )
 			{
 				inputLimit = 0;
-				Utils.printFailedToAddEmployee();
+				Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 				return null;
 			}
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			return getNameInput();
 		}
 		
@@ -401,10 +409,10 @@ public class HRController
 				if(inputLimit == 3)
 				{
 					inputLimit = 0;
-					Utils.printFailedToAddEmployee();
+					Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 					return null;
 				}
-				Utils.printInvalidInputMessage();
+				Utils.printMessage(StringConstant.INVALID_INPUT);
 				return getGenderInput();
 		}
 		return gender;
@@ -416,11 +424,19 @@ public class HRController
 		
 		ResultSet result = EmployeeDBController.getReportingID(teamId,rolePriority);
 		
-		boolean isReportingIdPresent = hrView.printReportingIdIfExists(result);
-		if( !isReportingIdPresent)
+		try {
+			if(!result.next())
+			{
+				Utils.NoHigherRoleAvailable();
+				return 1;
+			}
+		} 
+		catch (SQLException e)
 		{
-			return 1;   //1 is CEO's ID
+			System.out.println(StringConstant.INVALID_REPORTING_ID);
+			Utils.printSpace();
 		}
+		hrView.printReportingID(result);
 		
 		int userInput = hrView.getReportingID();
 		
@@ -436,10 +452,9 @@ public class HRController
 				inputLimit = 0;
 				return 0;
 			}
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			return getReportingID(teamId, rolePriority);
 		}
-		
 	}
 	
 	
@@ -449,7 +464,7 @@ public class HRController
 		if(inputLimit == 3)
 		{
 			inputLimit = 0;
-			Utils.printFailedToAddEmployee();
+			Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 			return null;
 		}
 		
@@ -474,12 +489,11 @@ public class HRController
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			try 
 			{
-				date = sdf.parse(joiningDate);
-				return date;
+				return sdf.parse(joiningDate);
 			} 
 			catch (ParseException e)
 			{
-				e.printStackTrace();
+				System.out.println("  Error occured in converting date into date object\n");
 			}
 		}
 		else
@@ -511,11 +525,11 @@ public class HRController
 			if(inputLimit == 3)
 			{
 				inputLimit = 0;
-				Utils.printFailedToAddEmployee();
+				Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 				return 0;
 			}
 			
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			return getWorkLocationID();	
 		}
 		
@@ -565,37 +579,32 @@ public class HRController
 			if(inputLimit == 3)
 			{
 				inputLimit = 0;
-				Utils.printFailedToAddEmployee();
+				Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 				return null;
 			}
 			
-			Utils.printInvalidInputMessage();
+			Utils.printMessage(StringConstant.INVALID_INPUT);
 			return getEmailID();
 		}
 		
 		return null;
-		
 	}
 
 
 	private void editEmployeeDetails()
 	{
 		
-		if( !EmployeeDBController.employeesCount())
+		if( !EmployeeDBController.isMinimumEmployeesPresent())
 		{
-			hrView.canEditEmployee(-1);  //no employees available
+			Utils.printMessage(" No Employees Available");  
 			return;
 		}
 		
 		int userInput = hrView.getEmployeeID();
-		if(userInput == 1)			//CEO ID - 1
+		
+		if(userInput == 1 ||userInput == 2 )			//CEO ID - 1 , HR ID - 2
 		{
-			hrView.canEditEmployee(userInput);  //can't edit ceo 
-			return;
-		}
-		else if(userInput == 2)   //Default HR - 2
-		{
-			hrView.canEditEmployee(userInput);  //can't edit HR
+			Utils.printMessage(StringConstant.CANT_EDIT);   //can't edit CEO or HR
 			return;
 		}
 		else if(EmployeeValidation.isEmployeePresent(userInput))
@@ -603,41 +612,25 @@ public class HRController
 			Employee employee = EmployeeDBController.getEmployee(userInput);
 			processEdit(employee);
 			return;
-			
-		}
-		else if(userInput == 0)
-		{
-			hrView.canEditEmployee(userInput);  //Invalid Input.
-			inputLimit++;
-			
 		}
 		else
 		{
-			hrView.canEditEmployee(0);
-			inputLimit++;
+			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_ID);
+				editEmployeeDetails();
+			}
 		}
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			Utils.printFailedToEditEmployee();
-			return;
-		}
-		editEmployeeDetails();
-		return;
-		
-		
 	}
 	
 	
 	private void processEdit(Employee employee)
 	{
-		
-		
-		employeeView.displayProfile(employee);
 
-		hrView.processEdit();
-		int userInput = hrView.getConfirmForEdit();
+		employeeView.displayProfile(employee);
+		hrView.printConfirmUserBeforeEdit();
+		
+		int userInput = hrView.getInputFromHR();
 		
 		switch(userInput)
 		{
@@ -650,73 +643,68 @@ public class HRController
 				return;
 				
 			default :
-				inputLimit++;
-				if(inputLimit == 3)
+				if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
 				{
-					inputLimit = 0;
-					Utils.printFailedToEditEmployee();
-					return;
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					processEdit(employee);
 				}
-				Utils.printInvalidInputMessage();
-				processEdit(employee);
-				return;
 		}
-		
 	}
-
+	
 
 	private void displayEditOption(Employee employee) 
 	{
 		
-		
 		hrView.displayEditMenu();
-		int userInput = hrView.getInputForEdit();
-		if(userInput == 0)
-		{
-			inputLimit++;
-			if(inputLimit == 3)
-			{
-				inputLimit = 0;
-				Utils.printFailedToEditEmployee();
-				return;
-			}
-			displayEditOption(employee);
-			return;
-		}
+		int userInput = hrView.getInputFromHR();
 		
 		switch(userInput)
 		{
 		
 			case EDIT_TEAM_NAME :
-//					editTeamName(employee);
+				editTeam(employee);
 				break;
 				
 			case EDIT_ROLE :
-					editRole(employee);	
+				editRole(employee);	
 				break;
 				
 			case EDIT_REPORTING_ID :
-					editReportingID(employee);	
+				editReportingID(employee.getemployeeID());	
 				break;
 				
 			case EDIT_LOCATION :
-					editLocation(employee);     
+				editLocation(employee);     
 				break;
 				
 			case BACK_MENU :
 				return;
 				
-				default :
-					inputLimit++;
-					Utils.printInvalidInputMessage();
+			default :
+				if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					displayEditOption(employee);
+				}
+				return;
 		}
-		
 		
 		employeeView.displayProfile(EmployeeDBController.getEmployee(employee.getemployeeID()));
 		displayEditOption(employee);
-		return;
-
+	}
+	
+	
+	boolean inputLimitReached(String message)
+	 {
+		inputLimit++;
 		
+		if(inputLimit == 3)
+		{
+			inputLimit = 0;
+			Utils.printMessage(message);
+			return true;
+		}
+		return false;
 	}
 	
 	
@@ -724,81 +712,75 @@ public class HRController
 	{
 		
 		int rolePriority = RoleDBController.getRolePriority(employee.getemployeeRoleID());
-		
 		ArrayList<Role> roles = RoleDBController.listRoleExceptPreviousRole(rolePriority);
+		
 		if(roles.size() == 0)
 		{
-			Utils.printFailedToEditRole();
+			Utils.printMessage(StringConstant.NO_ROLE_AVAILABLE);
 			return;
 		}
+		
 		hrView.displayRoles(roles);
 		int userInput = hrView.getRoleID();
 
 		if(userInput != employee.getemployeeRoleID() && userInput != 1 && userInput!= 0 && RoleDBController.isRoleIdPresent(userInput))
 		{
+			
 			RoleDBController.setRoleID(userInput, employee.getemployeeID());
-			editReportingID(employee);
-			hrView.isRoleChanged(true);
-			editReportingID(employee);
+			editReportingID(employee.getemployeeID());
+			
+			Utils.printMessage(StringConstant.ROLE_CHANGED);
 			return;
 		}
 		else
 		{
-			inputLimit++;
-			hrView.isRoleChanged(false);
-			if(inputLimit == 3)
+			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
-				inputLimit = 0;
-				Utils.printFailedToEditEmployee();
-				return;
+				Utils.printMessage(StringConstant.INVALID_ROLE_ID);
+				editRole(employee);
 			}
+			return;
 		}
-		editRole(employee);
-		return;
 	}
 
 	
-	private void editReportingID(Employee employee)
+	private void editReportingID(int employeeID)
 	{
+		
+		Employee employee = EmployeeDBController.getEmployee(employeeID);
 		
 		//get the employee (Role) priority id
 		int rolePriorty = RoleDBController.getRolePriority(employee.getemployeeRoleID());
-		
+
 		//get the reporting id
-		int reportingID = getNewReportingID(employee.getEmployeeTeamID(), rolePriorty, employee.getemployeeID());
-		
-		if(reportingID == 0) 
+		int reportingID = getNewReportingID(employee.getEmployeeTeamID(), rolePriorty, employee.getReportingToID());
+		Utils.printSpace();
+		if(reportingID == 0)
 		{
-			//-----------
 			return;
 		}
+		
 		if(reportingID == 1)
 		{
+			EmployeeDBController.setReportingID(reportingID, employee.getemployeeID());
 			return;
 		}
-		Utils.printSpace();
-		
-		if( reportingID != employee.getReportingToID() && EmployeeValidation.isEmployeeInTeam(employee.getEmployeeTeamID(), reportingID))
+		else if( reportingID != employee.getReportingToID() && EmployeeValidation.isEmployeeInTeam(employee.getEmployeeTeamID(), reportingID))
 		{
 			if(EmployeeDBController.setReportingID(reportingID, employee.getemployeeID()))
 			{
-				hrView.isReportingIDChanged(true);
+				Utils.printMessage(StringConstant.REPORTING_ID_CHANGED);
 				return;
 			}
 		}
 		else
 		{
-			inputLimit++;
-			if(inputLimit == 3)
+			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
-				inputLimit = 0;
-				Utils.printFailedToEditEmployee();
-				return;
+				Utils.printMessage(StringConstant.INVALID_REPORTING_ID);
+				editReportingID(employeeID);
 			}
-			hrView.isReportingIDChanged(false);
-			editReportingID(employee);
 			return;
-			
 		}
 	}
 	
@@ -807,28 +789,43 @@ public class HRController
 		
 		ResultSet result = EmployeeDBController.getNewReportingID(teamID,rolePriority, employeeID);
 		
-		boolean isReportingIdPresent = hrView.printReportingIdIfExists(result);
-		if( !isReportingIdPresent)
+		try 
 		{
-			return 1;   //1 is CEO's ID
-		}
-		
-		int userInput = hrView.getReportingID();
-		if(userInput == 0)
+			if(!result.next()) 	 //return true if resultSet is Empty
+			{
+				Utils.NoHigherRoleAvailable();
+				return 1;
+			}
+			else
+			{
+				result.previous();
+				hrView.printReportingID(result);
+				
+				int userInput = hrView.getReportingID();
+				if(userInput == 0)
+				{
+					if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+					{
+						Utils.printMessage(StringConstant.INVALID_REPORTING_ID);
+						getNewReportingID(teamID, rolePriority, employeeID);
+					}
+					return 0;
+				}
+				return userInput;
+			}
+		} 
+		catch (SQLException e)
 		{
-			return 0;
+			System.out.println(StringConstant.INVALID_REPORTING_ID);
+			Utils.printSpace();
 		}
-		else
-		{
-			return userInput;
-		}
-		
+		return 0;
 	}
+
 
 
 	private void editLocation(Employee employee) 
 	{
-		
 		ArrayList<WorkLocation> locations = WorkLocationDBController.getLocationExceptPreviousLocation(employee.getWorkLocationID());
 		hrView.printworkLocation(locations);
 		
@@ -838,92 +835,187 @@ public class HRController
 		{
 			if(WorkLocationDBController.setLocationID(userInput, employee.getemployeeID()))
 			{
-				hrView.isWorkLocationChanged(true);
+				Utils.printMessage(StringConstant.LOCATION_CHANGED);
 				return;
 			}
 		}
 		else
 		{
-			inputLimit++;
-			hrView.isWorkLocationChanged(false);
-			if(inputLimit == 3)
-			{
-				inputLimit = 0;
-				Utils.printFailedToEditEmployee();
-				return;
-			}
+			Utils.printMessage(StringConstant.INVALID_LOCATION_ID);			
 		}
 		
-		editLocation(employee);
-		return;
+		if(!inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+		{
+			editLocation(employee);
+		}
+	}
+	
+
+	private void editTeam(Employee employee)
+	{
 		
+		int employeeID = employee.getemployeeID();
+		int teamID = employee.getEmployeeTeamID();
+		
+		ArrayList<Team> teams = TeamDBController.listTeamExceptCurrentTeam(teamID);
+		employeeView.listTeam(teams);
+		
+		int userInput = hrView.getTeamID();
+		
+		if(EmployeeValidation.isTeamIdPresent(userInput) && userInput !=teamID)
+		{
+			if(TeamDBController.setTeamID(userInput, employee.getemployeeID()))
+				{
+					editReportingID(employeeID);
+					Utils.printMessage(StringConstant.TEAM_CHANGED);
+					return;
+				}
+		}
+		else
+		{
+			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			{
+				Utils.printMessage(StringConstant.INVALID_TEAM_ID);
+				editTeam(employee);
+			}
+			return;
+		}
+	}
+
+	
+	private void requests()
+	{
+		
+		ArrayList<Request>  requests = RequestDBController.getRequestsForHR();  
+
+		if(requests.isEmpty())
+		{
+			Utils.printMessage(StringConstant.NO_REQUESTS);
+			return;
+		}
+		
+		int userInput = hrView.viewRequest();
+		
+		switch(userInput)
+		{
+			case VIEW_REQUEST :
+				viewRequests(requests);
+				break;
+				
+			case BACK :
+				return;
+				
+			default :
+				if( !inputLimitReached(StringConstant.INVALID_INPUT))
+				{
+					requests();
+				}
+		}
+	}
+	
+	
+	private void viewRequests(ArrayList<Request> requests)
+	{
+		
+		hrView.displayRequests(requests);
+		replyRequest();
+	}
+	
+	private void replyRequest()
+	{
+
+		int requestID = hrView.getRequestID();
+		
+		if(RequestDBController.isRequestWaitingForHRApproval(requestID, "HR"))
+		{
+			
+			//get the specific message for confirmation
+			Request request = RequestDBController.getSpecificRequestForHR(requestID);
+			
+			ArrayList<Request> requests = new ArrayList<>();
+			requests.add(request);
+			
+			hrView.displayRequests(requests);
+			handleRequest(request);
+		}
+		else
+		{
+			if( !inputLimitReached(StringConstant.CANT_PROCESS_TEAM_CHANGE))
+			{
+				Utils.printMessage(" Enter valid Request ID ");
+				replyRequest();
+			}
+		}
+	}
+	
+	
+	private void handleRequest(Request request)
+	{
+		
+		int userInput = hrView.confirmBeforeChangeTeam();
+		
+		switch(userInput)
+		{
+		
+			case CONFIRM :
+				manageTeamChange(request);
+				break;
+				
+			case BACK :
+				return;
+				
+			default :
+				if( !inputLimitReached(StringConstant.CANT_PROCESS_TEAM_CHANGE))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					handleRequest(request);
+				}
+		}
+	}
+	
+	private void manageTeamChange(Request request)
+	{
+		
+		Employee employee = EmployeeDBController.getEmployee(request.getRequestBy());
+		
+		int notificationID = NotificationDBController.getNotificationID(request.getRequestID(), request.getRequestBy());
+
+		if(isTeamchanged(employee, request.getTeamID()))
+		{
+			String notification = " TC"+request.getRequestID()+ " - your team changed successful";
+			changeNotification(notificationID, notification, false);
+			RequestDBController.deleteRequest(request.getRequestID());
+		}
+		else
+		{
+			String notification = " TC"+request.getRequestID()+ " - Can't change your Team, contact your Team Head. ";
+			changeNotification(notificationID, notification, false);
+		}
+	}
+	
+	private boolean isTeamchanged(Employee employee, int newTeamID)
+	{
+		
+		if(TeamDBController.setTeamID(newTeamID, employee.getemployeeID()))
+		{
+			editReportingID(employee.getemployeeID());
+			Utils.printMessage(StringConstant.TEAM_CHANGED);
+			return true;
+		}
+		
+		return false;
 	}
 	
 	
 	
+	private void changeNotification(int notificationID, String notification, boolean isMessageSeen)
+	{
+		
+		if( !NotificationDBController.changeNotification(notificationID, notification, isMessageSeen))
+		{
+			Utils.printMessage(" Can't change Notification ! ");
+		}
+	}
 	
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-//	private void editTeamName(Employee employee)
-//	{
-//		
-//		if(inputLimit == 3)
-//		{
-//			inputLimit = 0;
-//			return;
-//		}
-//		
-//		int teamID = employee.getEmployeeTeamID();
-//		
-//		if(employeeView.listTeamName(teamID))
-//		{
-//			try
-//			{
-//				int userInput = Utils.getIntInput();
-//				
-//				if(EmployeeValidation.isTeamIdPresent(userInput) && userInput != employee.getEmployeeTeamID())
-//				{
-//					if(TeamDBController.setTeamID(userInput, employee.getemployeeID()))
-//					{
-//						editReportingID(employee);
-//						System.out.println("  ~ Team Changed successful\n");
-//						return;
-//					}
-//					
-//				}
-//				else
-//				{
-//					inputLimit++;
-//					System.out.println("  Enter Valid Team ID\n");
-//				}
-//				
-//			}
-//			catch(InputMismatchException e)
-//			{
-//				inputLimit++;
-//				Utils.printSpace();
-//				System.out.println("  Enter Team ID only..!!!\n");
-//				Utils.scanner.nextLine();
-//			}
-//			
-//			editTeamName(employee);
-//		}
-//	}
-	
-
 }

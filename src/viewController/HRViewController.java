@@ -12,11 +12,16 @@ import utils.*;
 public class HRViewController 
 {
 	
+	
+	//creating object for senior employee ViewController
+		SeniorEmployeeViewController seniorEmployeeView = new SeniorEmployeeViewController();
+		
+		
 	//checks the input, only 3 wrong inputs should be allowed
 	int inputLimit = 0;
 
 	
-	public void displayHrMenu()
+	public void displayHrMenu(int requestCount)
 	{
 
 		 System.out.println(" Features : ");
@@ -28,17 +33,22 @@ public class HRViewController
 		 System.out.println(" 5. View Team Info ");  
 		 System.out.println(" 6. Edit Employee Info");
 		 System.out.print(" 7. Employee Requests ");
-		 Utils.printSpace();
+		 if(requestCount > 0)
+		 {
+			 System.out.println(" ~ [" + requestCount + "] unread");
+		 }
+		 else
+		 {
+			 Utils.printSpace();
+		 }
 		 System.out.println(" 8. Logout.");
 		 Utils.printLine();
 		 Utils.printSpace();
 
 	}
 	
-	
 	public int getInputFromHR()
 	{
-		
 		try
 		{
 			int input = Utils.getIntInput();
@@ -53,37 +63,17 @@ public class HRViewController
 	
 	public String getTeamName()
 	{
-		
 		System.out.println(" Enter Team Name ");
-		String name = Utils.getStringInput().toUpperCase();
-		return name;		
+		return Utils.getStringInput();	
 	}
 	
-	
-	public void isTeamAddedSuccessful(int value, String teamName)
+	public int getTeamID()
 	{
 		
-		if(value == 1)
-		{
-			System.out.println("    ~ Successfully Added a Team -> ["+teamName+"]");
-			Utils.printSpace();
-		}
-		
-		else if(value == 2)
-		{
-			System.out.println("  Team ["+teamName+"] already exists!!");
-			Utils.printTryAgainMessage();
-		}
-		else
-		{
-			System.out.println("   * Please, Enter a valid Team Name to Add \n");
-			System.out.println("   * Name should be minimum of 2 characters & start with alphabet.\n");
-		}
-		
-	
+		System.out.println(" Select Team ID to proceed : \n");
+		return getInputFromHR();
 	}
 
-	
 	public String getRoleName()
 	{
 		
@@ -109,62 +99,6 @@ public class HRViewController
 		}
 	}
 	
-	
-	public void isRoleAddedSuccessful(int value, String roleName)
-	{
-		
-		if(value == 1)
-		{
-			System.out.println("    ~ Successfully Added a Role -> ["+roleName+"]");
-			Utils.printSpace();
-		}
-		
-		else if(value == 2)
-		{
-			System.out.println("  Role ["+roleName+"] already exists!!");
-			Utils.printTryAgainMessage();
-		}
-		else if(value == 3)
-		{
-			System.out.println("   * Please, Enter a valid Role Name to Add \n");
-			System.out.println("   * Name should be minimum of 2 characters & start with alphabet.\n");
-		}
-		else
-		{
-			System.out.println("  Failed to Add Role\n");
-		}
-		
-	
-	}
-	
-	public void isLocationAddedSuccessful(int value, String locationName)
-	{
-		
-		if(value == 1)
-		{
-			System.out.println("    ~ Successfully Added a Location -> ["+locationName+"]");
-			Utils.printSpace();
-		}
-		
-		else if(value == 2)
-		{
-			System.out.println("  Location ["+locationName+"] already exists!!");
-			Utils.printTryAgainMessage();
-		}
-		else if(value == 3)
-		{
-			System.out.println("   * Please, Enter a valid Location Name to Add \n");
-			System.out.println("   * Name should contains a minimal characters & start with alphabet.\n");
-		}
-		else
-		{
-			System.out.println("  Failed to add new Location\n");
-		}
-		
-	
-	}
-
-	
 	public void displayRolePriority(ArrayList<Role> roles)
 	{
 		
@@ -181,52 +115,30 @@ public class HRViewController
 		Utils.printSpace();
 	}
 	
-	
 	public int getRolePriority()
 	{
 		
 		System.out.println("  NOTE : Select Priority ID to add Next to the selected Role priority \n");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			inputLimit++;
-			Utils.printInvalidInputMessage();
-			Utils.scanner.nextLine();
-			
-			if(inputLimit == 3)
-			{
-				inputLimit = 0;
-				return 0;
-			}
-			return getRolePriority();
-		}
+		return getInputFromHR();	
+
 	}
-	
 	
 	public String getLocationName()
 	{
-		
 		System.out.println(" Enter Location Name to add :");
-		String locationName = Utils.getStringInput().toUpperCase();
-		return locationName;
+		return Utils.getStringInput().toUpperCase();
 	}
-	
 	
 	public void isEmployeeAddedSuccessful(boolean isAdded)
 	{
 		
 		if(isAdded)
 		{
-			System.out.println("    ~ Employee Added Successfully\n");
+			Utils.printMessage(StringConstant.EMPLOYEE_ADDED_SUCCESSFUL);
 		}
 		else
 		{
-			Utils.printFailedToAddEmployee();
+			Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
 		}
 		
 	}
@@ -257,19 +169,8 @@ public class HRViewController
 	
 	public int getRoleID()
 	{
-		
 		System.out.println(" Select Role ID to proceed : \n");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
+		return getInputFromHR();
 	}
 	
 	public String getName()
@@ -282,8 +183,7 @@ public class HRViewController
 		System.out.println("   * It should not have Numberic values and does not end with [.] period ");
 		Utils.printSpace();
 		
-		String name = Utils.getStringInput();
-		return name;
+		return Utils.getStringInput();
 	}
 	
 	public int getGenderInput()
@@ -295,68 +195,49 @@ public class HRViewController
 		System.out.println(" 2. FEMALE.");
 		System.out.println(" 3. Others.");
 		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
-
+		return getInputFromHR();
 	}
 	
-	public boolean printReportingIdIfExists(ResultSet result)
+	public void printReportingID(ResultSet result)
 	{
 		
 		try 
 		{
-			if(!result.next())  //return false if resultSet is Empty
+			if(!result.next())  //return true if resultSet is Empty
 			{
 				System.out.println("  You have prefered Higher Role...\n");
 				System.out.println("  So, this Role has automatically  set default Reporting to -> CEO\n");
-				return false;
 			}
-			result.previous();
-			
-			Utils.printLine();
-			System.out.println("    ID        NAME           ROLE");
-			Utils.printLine();
-			
-			while(result.next())
+			else
 			{
+				result.previous();
 				
-				int id = result.getInt(DBConstant.ID);
-				String name = result.getString(DBConstant.NAME);
-				String role = result.getString(DBConstant.ROLE_NAME);
-				System.out.printf("   %3s        %-12s    %-5s  \n",id, name, role);
+				Utils.printLine();
+				System.out.println("    ID        NAME           ROLE");
+				Utils.printLine();
+			
+				while(result.next())
+				{
+					
+					int id = result.getInt(DBConstant.ID);
+					String name = result.getString(DBConstant.NAME);
+					String role = result.getString(DBConstant.ROLE_NAME);
+					System.out.printf("   %3s        %-12s    %-5s  \n",id, name, role);
+				}
+				Utils.printLine();
+				Utils.printSpace();
 			}
-		} 
-		catch (SQLException e)
-		{
-			System.out.println("  Error !");
 		}
-		Utils.printLine();
-		Utils.printSpace();
-		return true;
+			catch (SQLException e) 
+			{
+					System.out.println("  Error in printing Reporting ID");
+			}
 	}
 	
 	public int getReportingID()
 	{
 		System.out.println(" Select Reporting ID : \n");
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
-		
+		return getInputFromHR();
 	}
 	
 	public String getJoiningDate()
@@ -367,27 +248,14 @@ public class HRViewController
 		System.out.println("  * you can Choose Date Of Joining from a week before "+Utils.getTodayDate());
 		Utils.printSpace();
 		
-		String userInput = Utils.getStringInput();
-		return userInput;
+		return Utils.getStringInput();
 	}
 	
 	public int getLocationID()
 	{
 		System.out.println(" Choose Location ID: \n");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
-		
+		return getInputFromHR();
 	}
-	
 	
 	public void printworkLocation(ArrayList<WorkLocation> locations)
 	{
@@ -411,70 +279,22 @@ public class HRViewController
 		Utils.printSpace();
 		System.out.println(" Please enter USERNAME only. Domain Name will be automatically generated.");
 		Utils.printSpace();
-		String mail = Utils.getStringInput()+"@zoho.in";
 		
-		return mail;
+		return Utils.getStringInput()+"@zoho.in";
+		
 	}
-	
 	
 	public int getEmployeeID()
 	{
-		
 		System.out.println("Enter User ID : ");
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
-		
-	}
-	
-	public void canEditEmployee(int value)
-	{
-		if(value == -1)
-		{
-			System.out.println("  ~ No Employee Available to Edit. \n");
-		}
-		else if(value == 0)
-		{
-			System.out.println("  Invalid Employee ID\n");
-		}
-		else if(value == 1)
-		{
-			System.out.println("   ~ Can't edit CEO Details.\n");
-		}
-		else if(value == 2)
-		{
-			System.out.println("   ~ You can't edit your details without permissions.\n");
-		}
+		return getInputFromHR();
 	}
 
-	public void processEdit()
+	public void printConfirmUserBeforeEdit()
 	{
 		System.out.println(" 1. Confirm User profile before Edit");
 		System.out.println(" 2. Back");
 		Utils.printSpace();
-	}
-	
-	public int getConfirmForEdit()
-	{
-		
-		try
-		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
-		}
 	}
 	
 	public void displayEditMenu()
@@ -491,58 +311,42 @@ public class HRViewController
 		Utils.printSpace();
 	}
 	
-	public int getInputForEdit()
+	public int viewRequest()
+	{
+		System.out.println(" 1. View Requests");
+		System.out.println(" 2. Back");
+		
+		return getInputFromHR();
+	}
+	
+	public int getRequestID()
+	{
+		System.out.println("  Enter Request ID for Team Change : ");
+		return getInputFromHR();
+	}
+	
+	public void displayRequests(ArrayList<Request> requests)
 	{
 		
-		try
+		Utils.printLine();
+		System.out.println("  Requests ");
+		Utils.printLine();
+		
+		for(Request request : requests)
 		{
-			int userInput = Utils.getIntInput();
-			return userInput;
-		}
-		catch(InputMismatchException e)
-		{
-			Utils.scanner.nextLine();
-			return 0;
+				seniorEmployeeView.printRequest(request);
 		}
 		
+		Utils.printSpace();
 	}
 	
-	public void isWorkLocationChanged(boolean isChanged)
+	public int confirmBeforeChangeTeam()
 	{
-		if(isChanged)
-		{
-			System.out.println("   ~ Work Location changed successful \n");
-		}
-		else
-		{
-			System.out.println("  Invalid Location ID\n");
-		}
+		System.out.println(" 1. Confirm before Team change");
+		System.out.println(" 2. Back");
+		
+		return getInputFromHR();
 	}
-	
-	public void isRoleChanged(boolean isChanged)
-	{
-		if(isChanged)
-		{
-			System.out.println("   ~ Role changed successful \n");
-		}
-		else
-		{
-			System.out.println("  Invalid Role ID\n");
-		}
-	}
-	
-	public void isReportingIDChanged(boolean isChanged)
-	{
-		if(isChanged)
-		{
-			System.out.println("   ~ Reporting To changed successful \n");
-		}
-		else
-		{
-			System.out.println("  Invalid Reporting ID\n");
-		}
-	}
-	
 
 	
 	
@@ -564,37 +368,7 @@ public class HRViewController
 	
 	
 	
-//	//method for display higher role than the previous role
-//	public boolean displayHigherRoles(int rolePriority)
-//	{
-//		
-//		ArrayList<Role> roles = RoleDBController.listRole();
-//		
-//		if(RoleDBController.higherRoleCount(rolePriority) >= 1)   //check if atleast two role is present to display
-//		{
-//			Utils.printLine();
-//			System.out.println("  ROLE ID    ROLE NAME ");
-//			Utils.printLine();
-//			
-//			for(Role role : roles)
-//			{
-//				if(role.getRolePriority() < rolePriority &&  !role.getRoleName().equalsIgnoreCase("CEO"))
-//				{
-//					System.out.printf("  %5s   -   %-5s\n",role.getRoleID(),role.getRoleName());
-//				}
-//			}
-//			
-//			Utils.printLine();
-//			Utils.printSpace();
-//			return true;
-//		}
-//		else
-//		{
-//			System.out.println("  No Role is Available to display!!\n");
-//			return false;
-//		}
-//		
-//	}
+
 
 	
 //-----------------------------------
