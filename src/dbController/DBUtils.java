@@ -20,6 +20,9 @@ public class DBUtils
 		createWorkExperienceTable();
 		createRequestsTable();
 		createNotificationTable();
+		createLeaveTypeTable();
+		createLeaveManagementTable();
+		createLeaveBalanceTable();
 	}
 	
 	
@@ -130,12 +133,12 @@ public class DBUtils
 						+ DBConstant.DOJ + " date not null, "
 						+ DBConstant.COMPANY_MAIL + " varchar(100) unique not null, "
 						+ DBConstant.GENDER + " varchar(10) not null, "
-						+ DBConstant.FOREIGN_KEY + " (role_ID) "
-						    + DBConstant.REFERENCES + " role(role_id), "
-					    + DBConstant.FOREIGN_KEY + " (team_ID) "
-					        + DBConstant.REFERENCES + " teams(team_id), "
-					    + DBConstant.FOREIGN_KEY + " (work_location) "
-					        + DBConstant.REFERENCES + " work_location(location_id))";
+						+ DBConstant.FOREIGN_KEY + " (" + DBConstant.ROLE_ID + ") "
+						    + DBConstant.REFERENCES + DBConstant.ROLE_TABLE + "(" + DBConstant.ROLE_ID  + "), "
+					    + DBConstant.FOREIGN_KEY + " (" + DBConstant.TEAM_ID  +") "
+					        + DBConstant.REFERENCES + DBConstant.TEAMS_TABLE + "(" + DBConstant.TEAM_ID + "), "
+					    + DBConstant.FOREIGN_KEY + " (" + DBConstant.WORK_LOCATION  +") "
+					        + DBConstant.REFERENCES + DBConstant.WORK_LOCATION +  "(" + DBConstant.LOCATION_ID + "))";
 		
 		try 
 		{
@@ -253,11 +256,72 @@ public class DBUtils
 		} 
 		catch (SQLException e) 
 		{
-			e.printStackTrace();
 			System.out.println("  Can't create Notification table ");
 		}
 	}
 	
-
+	public static void createLeaveTypeTable()
+	{
+		
+		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS +" "+DBConstant.LEAVE_TYPE_TABLE + " (" 
+						+ DBConstant.LEAVE_TYPE_ID + " serial primary key, "
+						+ DBConstant.LEAVE_NAME + " varchar(100) not null, " + DBConstant.LEAVE_COUNT + " int not null," +  DBConstant.GENDER + " varchar(20) not null ) ";  
+						
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println("  Can't create Leave Type table ");
+		}
+	}
+	
+	
+	public static void createLeaveManagementTable()
+	{
+		
+		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS +" "+DBConstant.LEAVE_MANAGEMENT_TABLE + " (" 
+						+ DBConstant.LEAVE_ID + " int not null generated always as identity (increment 2 start 1001) " +  DBConstant.PRIMARY_KEY  +", "
+						+ DBConstant.REQUEST_BY + " int, " + DBConstant.REPORTING_ID + " int, " + DBConstant.LEAVE_TYPE_ID + " int, "  
+						+ DBConstant.FROM_DATE + " date not null, " + DBConstant.TO_DATE + " date not null, "
+						+ DBConstant.REASON_FOR_LEAVE + " varchar(255), " + DBConstant.STATUS + " varchar(50) not null, "
+						+ DBConstant.REJECTED_REASON + " varchar(255), " 
+						+ DBConstant.FOREIGN_KEY +" (" + DBConstant.LEAVE_TYPE_ID +") "
+					    	+ DBConstant.REFERENCES + DBConstant.LEAVE_TYPE_TABLE + " (" + DBConstant.LEAVE_TYPE_ID +") )";
+						
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println("  Can't create Leave Management table ");
+		}
+	}
+	
+	public static void createLeaveBalanceTable()
+	{
+		
+		String query = DBConstant.CREATE_TABLE_IF_NOT_EXISTS +" "+DBConstant.LEAVE_BAlANCE_TABLE + " (" 
+						+ DBConstant.TAKEN_LEAVE_ID + " serial primary key, "
+						+ DBConstant.EMPLOYEE_ID + " int , " + DBConstant.TOTAL_LEAVE + " int not null, "
+						+ DBConstant.UNUSED_LEAVE + " int not null, " + DBConstant.LEAVE_TYPE_ID + " int not null, " 
+						+ DBConstant.FOREIGN_KEY +" (" + DBConstant.LEAVE_TYPE_ID +") "
+				    		+ DBConstant.REFERENCES + DBConstant.LEAVE_TYPE_TABLE + " (" + DBConstant.LEAVE_TYPE_ID +"))";
+			
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			statement.executeUpdate();
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println("  Can't create Leave Balance table ");
+		}
+	}
+	
 	
 }

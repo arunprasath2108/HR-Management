@@ -193,56 +193,9 @@ public class Employee
 			this.passedOutYear = year;
 		}
 		
-		
-		
-		
-		
-//		public void setemployeeID(int id)
-//		{
-//			employeeID = id;
-//		}
-		
-		
-//		public void setemployeeName(String name)
-//		{
-//			employeeName = name;
-//		}
-		
-//		public void setemployeeRole(String role)
-//		{
-//			this.role = role;
-//		}
-		
-//		public void setEmployeeTeamName(int teamID)
-//		{
-//			employeeTeamID = teamID;
-//		}
-		
-
-		
-//		public void setEmployeeWorkLocation(String location)
-//		{
-//			employeeWorkLocation = location;
-//		}
-		
-//		public void setDateOfJoining(String doj)
-//		{
-//			dateOfJoining = doj;
-//		}
-		
-//		public void setCompanyMailId(String mailID)
-//		{
-//			companyMailId = mailID;
-//		}
-		
-//		public void setGender(String gender)
-//		{
-//			this.gender = gender;
-//		}
-		
-		
-		
-		
-
+		public void setTemporaryDateOfJoining(Date date)
+		{
+			this.dateOfJoining = date;
+		}
 
 }

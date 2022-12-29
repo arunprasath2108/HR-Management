@@ -2,8 +2,6 @@ package viewController;
 
 import java.sql.*;
 import java.util.*;
-
-import controller.HRController;
 import dbController.*;
 import model.*;
 import utils.*;
@@ -14,7 +12,7 @@ public class HRViewController
 	
 	
 	//creating object for senior employee ViewController
-		SeniorEmployeeViewController seniorEmployeeView = new SeniorEmployeeViewController();
+	SeniorEmployeeViewController seniorEmployeeView = new SeniorEmployeeViewController();
 		
 		
 	//checks the input, only 3 wrong inputs should be allowed
@@ -30,9 +28,10 @@ public class HRViewController
 		 System.out.println(" 2. Add Employee");  
 		 System.out.println(" 3. Add Role"); 
 		 System.out.println(" 4. Add Work Location"); 
-		 System.out.println(" 5. View Team Info ");  
-		 System.out.println(" 6. Edit Employee Info");
-		 System.out.print(" 7. Employee Requests ");
+		 System.out.println(" 5. Add Leave Type"); 
+		 System.out.println(" 6. View Team Info ");  
+		 System.out.println(" 7. Edit Employee Info");
+		 System.out.print(" 8. Employee Requests ");
 		 if(requestCount > 0)
 		 {
 			 System.out.println(" ~ [" + requestCount + "] unread");
@@ -41,7 +40,7 @@ public class HRViewController
 		 {
 			 Utils.printSpace();
 		 }
-		 System.out.println(" 8. Logout.");
+		 System.out.println(" 9. Logout.");
 		 Utils.printLine();
 		 Utils.printSpace();
 
@@ -191,9 +190,9 @@ public class HRViewController
 		
 		System.out.println(" Choose Gender :");
 		Utils.printSpace();
-		System.out.println(" 1. MALE.");
-		System.out.println(" 2. FEMALE.");
-		System.out.println(" 3. Others.");
+		System.out.println(" 1. MALE");
+		System.out.println(" 2. FEMALE");
+		System.out.println(" 3. Others");
 		
 		return getInputFromHR();
 	}
@@ -347,204 +346,33 @@ public class HRViewController
 		
 		return getInputFromHR();
 	}
-
 	
+	public String getLeaveName()
+	{
+		
+		System.out.println(" Enter Leave Name to add :");
+		return Utils.getStringInput();
+	}
 	
+	public int getLeaveCount()
+	{
+		
+		//jack
+		System.out.println(" Enter Leave count for :");
+		return getInputFromHR();
+	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
-	
-//-----------------------------------
-
-
-//	private  void processInbox(Employee employee)
-//	{
-//		int requestedID, checker = 0, senderID;
-//		System.out.println(" Choose Index number.");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			
-//			int userInput = Utils.getIntInput();
-//			userInput--;
-//			Utils.printSpace();
-//			
-//			for( String messages : employee.getRequests())
-//			{
-//				
-//				if(messages.indexOf(messages) == userInput)
-//				{
-//					checker = 1;
-//					String[] splitMessage = messages.split("-");
-//					senderID = Integer.parseInt(splitMessage[0]); 
-//					requestedID = Integer.parseInt(splitMessage[2]);
-//					 
-//					proceedMessage(employee, userInput, requestedID, senderID, messages );
-//					break;
-//				}
-//			}
-//			
-//			if(checker == 0)
-//			{
-//				System.out.println(" Please, Enter a Valid Index Number. ");
-//				Utils.printSpace();
-//				processInbox(employee);
-//				return;
-//				
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			processInbox(employee);
-//			return;
-//			
-//		}
-//	}
-//
-//
-//	private  void proceedMessage(Employee employee, int indexOfMessage, int requestID, int senderId, String message) 
-//	{
-//		
-//		try
-//		{
-//			System.out.println(" Choose a option :");
-//			Utils.printSpace();
-//			System.out.println(" 1. Change Team");
-//			System.out.println(" 2. Back.");
-//			Utils.printSpace();
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			switch(userInput)
-//			{
-//				case PROCESS_REQUEST :
-//					processRequest(employee, message, requestID, senderId, indexOfMessage );
-//					break;
-//					
-//				case IGNORE_MESSAGE :
-//					break;
-//					
-//					default :
-//						Utils.printInvalidInputMessage();
-//						requestMessages(employee);
-//						return;
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			requestMessages(employee);
-//			return;
-//		}	
-//		
-//	}
-//
-//	
-//	private void processRequest(Employee employee, String message, int requestID, int senderId , int indexOfMessage )
-//	{
-//		
-//		String[] getTeamName = message.split("-");
-//		String teamName = getTeamName[3];
-//		editTeamName(requestID, teamName, employee);
-//		employee.getRequests().remove(indexOfMessage);
-//		
-//		//get sender employee object
-//		Employee sender = Utils.getEmployeeObject(senderId);
-//		//get requester employee object
-//		Employee requestBy = Utils.getEmployeeObject(requestID);
-//		String requesterName = Utils.getEmployeeName(requestID);
-//		
-//		sender.setNotificationSeen(false);
-//		String messageSender = " ~ Team changed Successfully for \""+requesterName.toUpperCase()+"\"    "+Utils.getCurrentDateTime();
-//		sender.getNotification().replace(requestBy.getemployeeID(), messageSender );
-//		
-//		requestBy.setNotificationSeen(false);
-//		String messageRequester = " ~ Your Team changed Successfully to ["+teamName+"]       "+Utils.getCurrentDateTime();
-//		requestBy.getNotification().replace(requestBy.getemployeeID(), messageRequester);
-//		requestBy.setTeamChanged(false);
-//		
-//	}
-	
-
-//
-//public void requestMessages(Employee employee) 
-//{
-//	
-//	if(employee.getRequests().isEmpty() == true)
-//	{
-//		Utils.printSpace();
-//		System.out.println("  ~ No Requests.");
-//		Utils.printSpace();
-//		return;
-//	}
-//	
-//	Utils.printSpace();
-//	System.out.println("  EMPLOYEE REQUESTS : ");
-//	Utils.printLine();
-//	
-//	printRequestMessages(employee);
-//	Utils.printSpace();
-//	
-//	processInbox(employee);
-//	
-//}
-//
-////printing message received from others
-//private void printRequestMessages(Employee employee)
-//{
-//	
-//	int senderID = 0, requestedID = 0;
-//	String msg = "";
-//	String requestByName;
-//	
-//	for( int messageCount = 0; messageCount<employee.getRequests().size(); messageCount++)
-//	{
-//		
-//		String[] splitMessage = employee.getRequests().get(messageCount).split("-");
-//		 senderID = Integer.parseInt(splitMessage[0]); 
-//		 requestedID = Integer.parseInt(splitMessage[2]);
-//		String senderName = Utils.getEmployeeName(senderID);  
-//		requestByName = Utils.getEmployeeName(requestedID);  
-//		msg = splitMessage[1];		
-//		String newTeam = splitMessage[3];
-//		String dateTime = splitMessage[4];
-//	
-//		messageCount++;
-//		System.out.println("  "+messageCount+" - "+senderName+"           "+dateTime);
-//		messageCount--;
-//		
-//		Utils.printSpace();
-//		System.out.println("      ~ "+msg+"  Employee ID : "+requestByName+"   TEAM : "+newTeam);
-//		Utils.printSpace();
-//		
-//	}
-//	
-//}
-//
-//
+	public int getGenderForAddLeave()
+	{
+		
+		System.out.println(" Choose Gender :");
+		Utils.printSpace();
+		System.out.println(" 1. MALE");
+		System.out.println(" 2. FEMALE");
+		System.out.println(" 3. EVERYONE ");
+		
+		return getInputFromHR();
+	}
 
 	
 }

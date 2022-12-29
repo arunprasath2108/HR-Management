@@ -1,6 +1,5 @@
 package model;
 
-import java.util.Date;
 
 public class Notification 
 {
@@ -23,26 +22,11 @@ public class Notification
 	
 	//getters
 	
-	public int getnotificationID()
-	{
-		return notificationID;
-	}
-	
-	public int getemployeeID()
-	{
-		return employeeID;
-	}
-	
 	public String getNotification()
 	{
 		return notification;
 	}
-	
-	public boolean getNotificationSeen()
-	{
-		return notificationSeen;
-	}
-	
+
 	public String getNotificationTime()
 	{
 		return notificationTime;

@@ -1,6 +1,5 @@
 package model;
 
-import java.util.Date;
 
 public class Request 
 {
@@ -17,7 +16,6 @@ public class Request
 	{
 		this.requestBy = requestBy;
 		this.receiverID = receiverID;
-		this.requestedOn = requestedOn;
 		this.teamID = teamID;
 		this.status = status;
 	}
@@ -69,43 +67,6 @@ public class Request
 	{
 		return status;
 	}
-	
-	
-	//setters
-	
-	public void setRequestID(int requestID)
-	{
-		this.requestID = requestID;
-	}
-	public void setReceiverID(int receiver)
-	{
-		receiverID = receiver;
-	}
-
-	public void setRequestBy(int sender)
-	{
-		requestBy = sender;
-	}
-
-	public void setTeamID(int teamID)
-	{
-		this.teamID = teamID;
-	}
-	
-	public void setStatus(String message)
-	{
-		status = message;
-	}
-	
-	public void setRequestOn(String date)
-	{
-		requestedOn = date;
-	}
-	
-	
-	
-	
-
 	
 
 }

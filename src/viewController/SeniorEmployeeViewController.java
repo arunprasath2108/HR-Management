@@ -173,8 +173,20 @@ public class SeniorEmployeeViewController
 		String requestBy = EmployeeDBController.getEmployeeName(request.getRequestBy());
 		String teamName = TeamDBController.getTeamName(request.getTeamID());
 		
+		
+		//split date & time into two parts			
+		String[] dateFormat = request.getRequestOn().split(" ");
+		
+		//convert string into date format
+		Date requestDateintoDateObject = Utils.convertStringToDate(dateFormat[0]);
+
+		//convert date to readable format
+		String requestDate = Utils.convertDateIntoAnotherDateFormat(requestDateintoDateObject);
+		
+		
+	
 		Utils.printSpace();
-		System.out.println("  # " + request.getRequestID() + "                 " + request.getRequestOn() );
+		System.out.println("  # " + request.getRequestID() + "                         " + requestDate + "  " + dateFormat[1] );
 		Utils.printSpace();
 		System.out.println("  FROM : " + request.getRequestBy() + " - " + requestBy);
 		Utils.printSpace();
@@ -182,6 +194,7 @@ public class SeniorEmployeeViewController
 		Utils.printLine();
 		
 	}
+	
 	
 	public void displayNotification(ArrayList<Notification> notifications)
 	{
@@ -193,25 +206,50 @@ public class SeniorEmployeeViewController
 		
 		for(Notification notification : notifications)
 		{
-			printNotification(notification);
+			//split date & time into two parts			
+			String[] dateFormat = notification.getNotificationTime().split(" ");
+			
+			//convert string into date format
+			Date date = Utils.convertStringToDate(dateFormat[0]);
+
+			//convert date to readable format
+			String notificationDate = Utils.convertDateIntoAnotherDateFormat(date);
+			
+			System.out.println(" " + notificationDate + "                                " + dateFormat[1]);
+			Utils.printSpace();
+			System.out.println("  " + notification.getNotification());
+			Utils.printLine();
+			Utils.printSpace();
 		}
 		Utils.printSpace();
 	}
 	
-	public void printNotification(Notification notification)
+	public void printLeaveRequest(ArrayList<LeaveManagement> leaveReport)
 	{
 		
-		String[] splitNotification = notification.getNotificationTime().split(" ");
-		String date = splitNotification[0];
-		String time = splitNotification[1];
-		
-		System.out.println("  " + notification.getNotification());
-		Utils.printSpace();
-		System.out.println("  " + time + "                       " + date);
 		Utils.printLine();
 		Utils.printSpace();
-	}
+		
+		for(LeaveManagement leave : leaveReport)
+		{
+			
+			String name = EmployeeDBController.getEmployeeName(leave.getRequestBy());
+			
+			String fromDate = Utils.convertDateIntoAnotherDateFormat(leave.getfromDate());
+			String toDate = Utils.convertDateIntoAnotherDateFormat(leave.getToDate());
 
+			
+			System.out.printf(" # %-3s             %-20s \n", leave.getleaveID(), "From : " + fromDate + " To : " + toDate);
+			Utils.printSpace();
+			System.out.println("   Employee Name : " + name);
+			Utils.printSpace();
+			System.out.println("   Reason : " + leave.getReasonForLeave());
+			Utils.printSpace();
+			Utils.printLine();
+		}
+		
+		Utils.printSpace();
+	}
 	
 	public int getRequestInput()
 	{
@@ -237,27 +275,17 @@ public class SeniorEmployeeViewController
 
 	}
 	
+	public int getLeaveID()
+	{
+		System.out.println("  Enter leave ID for process Leave request : ");
+		return getInputFromEmployee();
+	}
 	
+	public String getReasonForReject()
+	{
+		System.out.println("  Enter a Valid Reason for Rejecting Leave Request : ");
+		return Utils.getStringInput();
+	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
-	
-	
-
 	
 }

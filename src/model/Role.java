@@ -43,33 +43,5 @@ public class Role
 		return rolePriority;
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-//	public void setRoleID(int roleId)
-//	{
-//		roleID = roleId;
-//	}
-	
-//	public void setRoleName(String roleName)
-//	{
-//		this.roleName = roleName;
-//	}
-	
-//	public void setRolePriority(int priorityID)
-//	{
-//		rolePriority = priorityID;
-//	}
 
 }

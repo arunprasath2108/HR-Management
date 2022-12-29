@@ -1,5 +1,7 @@
 package viewController;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
 
@@ -20,6 +22,7 @@ public class EmployeeViewController
 		System.out.println(" 2. Edit Personal Info");
 		System.out.println(" 3. Apply Leave");
 		System.out.println(" 4. View Leave Request Report");
+		System.out.println(" 5. Notification");
 		Utils.printSpace();
 		
 	}
@@ -160,7 +163,7 @@ public class EmployeeViewController
 		return getInputFromEmployee();
 	}
 	
-	public String passedOutYear()
+	public String getPassedOutYear()
 	{
 		
 		System.out.println(" Passed Out year     Format  -> [ yyyy ]");
@@ -227,7 +230,87 @@ public class EmployeeViewController
 		return getInputFromEmployee();
 	}
 	
+	public int getInputForApplyLeave()
+	{
+		
+		System.out.println(" 1. Apply leave");
+		System.out.println(" 2. Back");
+		
+		return getInputFromEmployee();
+	}
 	
+	public void displayAvailableLeave(ResultSet result)
+	{
+		
+		try 
+		{
+			
+			System.out.println("  # ID");
+			Utils.printLine();
+			
+			while(result.next())
+			{
+				Utils.printSpace();
+				System.out.println("  # " + result.getInt(DBConstant.LEAVE_TYPE_ID) + " - " + result.getString(DBConstant.LEAVE_NAME));
+				System.out.println("                       Available " + result.getInt(DBConstant.UNUSED_LEAVE) + " Day(s) ");
+				Utils.printSpace();
+			}
+			Utils.printLine();
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Can't able to display Available Leave ");
+		}
+	}
+	
+	public int getLeaveID()
+	{
+		
+		System.out.println(" Choose Leave ID");
+		return getInputFromEmployee();
+	}
+	
+	public String getDateForApplyLeave()
+	{
+		System.out.println(" Enter Date in this format ->  dd/mm/yyyy \n");
+		return Utils.getStringInput();
+	}
+	
+	public String getReasonForLeave()
+	{
+		System.out.println("  Reason for your leave apply : \n");
+		return Utils.getStringInput();
+	}
+	
+	public void printLeaveReport(ArrayList<LeaveManagement> leaveReport)
+	{
+		
+		
+		Utils.printLine();
+		Utils.printSpace();
+		
+		for(LeaveManagement leave : leaveReport)
+		{
+			
+			String fromDate = Utils.convertDateIntoAnotherDateFormat(leave.getfromDate());
+			String toDate = Utils.convertDateIntoAnotherDateFormat(leave.getToDate());
+			
+			System.out.println(" # ID "+leave.getleaveID() + "           From : " + fromDate + " to " + toDate );
+			Utils.printSpace();
+			System.out.printf("  Leave : %-20s    Status : %-10s", LeaveTypeDBController.getLeaveName(leave.getLeaveTypeID()),leave.getStatus());
+			Utils.printSpace();
+			
+			if(leave.getRejectedReason() != null)
+			{
+				System.out.println("  Reason : " + leave.getRejectedReason());
+				Utils.printSpace();
+			}
+			
+			Utils.printLine();
+			Utils.printSpace();
+		}
+		
+	}
 	
 	
 	

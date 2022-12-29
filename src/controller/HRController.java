@@ -5,6 +5,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 import dbController.*;
 import model.*;
@@ -30,15 +31,19 @@ public class HRController
 	 private static final int ADD_EMPLOYEE = 2;
 	 private static final int ADD_ROLE = 3;
 	 private static final int ADD_LOCATIONS = 4;
-	 private static final int VIEW_TEAM_INFO = 5;
-	 private static final int EDIT_EMPLOYEE_INFO = 6;
-	 private static final int REQUESTS = 7;
-	 private static final int LOG_OUT = 8;
+	 private static final int ADD_LEAVE = 5;
+	 private static final int VIEW_TEAM_INFO = 6;
+	 private static final int EDIT_EMPLOYEE_INFO = 7;
+	 private static final int REQUESTS = 8;
+	 private static final int LOG_OUT = 9;
 	 
 	 //Gender Input
 	 private static final int MALE = 1;
 	 private static final int FEMALE = 2;
 	 private static final int OTHERS = 3;
+	 
+	 private static final int EVERYONE = 3;
+
 	 
 	 //Edit Employee Details
 	 private static final int EDIT_TEAM_NAME = 1;
@@ -61,7 +66,7 @@ public class HRController
 	 
 	public void listEmployeeMenu()
 	{
-		int requestCount = requestCountForHR();
+		int requestCount = getRequestCountForHR();
 		hrView.displayHrMenu(requestCount);
 		getInputFromHR();
 	}
@@ -91,6 +96,10 @@ public class HRController
 				 addWorkLocations();
 				 break;
 				 
+			 case ADD_LEAVE :
+				 addLeave();
+				 break;
+				 
 			 case VIEW_TEAM_INFO :
 				 seniorEmployeeController.viewTeam();
 				 break;
@@ -118,7 +127,7 @@ public class HRController
 		 listEmployeeMenu();	 
 	}
 	
-	public int requestCountForHR()
+	public int getRequestCountForHR()
 	{
 		
 		ArrayList<Request>  requests = RequestDBController.getRequestsForHR();
@@ -223,7 +232,7 @@ public class HRController
 			return userInput;
 		}
 
-		if( !inputLimitReached(StringConstant.INVALID_INPUT))
+		if( !inputLimitChecker(StringConstant.INVALID_INPUT))
 		{
 			return getPreviousRolePriority();
 		}
@@ -318,7 +327,8 @@ public class HRController
 		if(EmployeeDBController.addEmployee(employee))
 		{
 			hrView.isEmployeeAddedSuccessful(true);
-			createRowInDB(name);
+			createRowInPersonalInformationTable(name);
+			getApplicableLeaveForEmployee(employee);
 			employeeView.displayProfile(employee);
 		}
 		else
@@ -327,12 +337,167 @@ public class HRController
 		}
 	}
 
-	void createRowInDB(String name)
+	private void createRowInPersonalInformationTable(String name)
 	{
 		//creates a Row in Personal Info table for this specific employee
 		PersonalDBController.createRowInPersonalInfoTable(EmployeeDBController.getEmployeeID(name));
 		
 	}
+	
+	private void getApplicableLeaveForEmployee(Employee employee)
+	{
+		
+		int employeeID = EmployeeDBController.getEmployeeID(employee.getemployeeName());
+
+		String gender = employee.getGender();
+		String getLeaveTypeExceptThisGender;
+		
+		if(gender.equalsIgnoreCase("male"))
+		{
+			getLeaveTypeExceptThisGender = StringConstant.FEMALE;
+		}
+		else
+		{
+			getLeaveTypeExceptThisGender = StringConstant.MALE;
+		}
+		
+		ArrayList<LeaveType>  leaveTypes = LeaveTypeDBController.getLeaveTypes(getLeaveTypeExceptThisGender);
+		
+		for(LeaveType leave : leaveTypes)
+		{
+			int unusedLeaveCount = getLeaveCount(leave.getLeaveCount(), employee.getDateOfJoining());
+			addUnusedLeaveForEmployee(leave, unusedLeaveCount, employeeID);
+		}
+	}
+	
+	private int getLeaveCount(int totalLeaveCount, Date employeeJoiningDate)
+	{
+		
+		//convert Date into LocalDate format to get Day Count of the year
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		LocalDate localDate = LocalDate.parse(sdf.format(employeeJoiningDate));
+		
+		int dayOfYear = localDate.getDayOfYear();  //joining date -> as today count of the year
+		int totalDaysInYear = 365;
+		
+		int diff = totalDaysInYear - dayOfYear;  
+		
+		double leaveForQuaterly = (double)(totalLeaveCount/ 4);    //10-2.5  12-3
+		double count = 0;
+		
+		if(diff >= 1 && diff <= 90)
+		{
+			count = Math.round(leaveForQuaterly * 1);   	
+		}
+		
+		else if(diff >= 91 && diff <= 180)
+		{
+			count = Math.round(leaveForQuaterly * 2);  
+		}
+		
+		else if(diff >= 181 && diff <= 270)
+		{
+			count = Math.round(leaveForQuaterly * 3);   
+		}
+		
+		else if(diff >= 271 && diff <= 365)
+		{
+			count = Math.round(leaveForQuaterly * 4);   
+		}
+		
+		return (int)count;
+		
+	}
+	
+
+	private void addUnusedLeaveForEmployee(LeaveType leave, int unusedLeaveCount, int employeeID)
+	{
+		
+												// - employeeID, Total_leaveCount, Unused_Leave, leaveID
+		LeaveBalance leaveBalance = new LeaveBalance(employeeID, leave.getLeaveCount(), unusedLeaveCount, leave.getLeaveID());
+		
+		if( !LeaveBalanceDBController.addLeaveForEmployee(leaveBalance))
+		{
+			Utils.printMessage(" Can't add " + LeaveTypeDBController.getLeaveName(leave.getLeaveID()));
+		}
+	}
+	
+		
+	private void addLeave()
+	{
+		
+		String leaveName = hrView.getLeaveName();
+		int leaveCount = hrView.getLeaveCount();
+		String genderInput = getGenderInputForAddLeave();
+		
+		
+		if(leaveCount == 0 || genderInput == null)
+		{
+			Utils.printMessage(StringConstant.FAILED_TO_ADD_LEAVE);
+		}
+		else
+		{
+			
+			LeaveType leave = new LeaveType(leaveName, leaveCount, genderInput);
+			
+			int leaveTypeID = LeaveTypeDBController.addLeave(leave);
+			if(leaveTypeID != 0)
+			{
+				addLeaveToExistingEmployees(leave, leaveTypeID);
+				Utils.printMessage(StringConstant.LEAVE_ADDED_SUCCESSFUL);
+			}
+			else
+			{
+				Utils.printMessage(StringConstant.FAILED_TO_ADD_LEAVE);
+			}
+		}
+	}
+
+	
+	private String getGenderInputForAddLeave()
+	{
+		
+		int genderInput = hrView.getGenderForAddLeave();
+		
+		switch(genderInput)
+		{
+			case MALE :
+				return "MALE";
+				
+			case FEMALE :
+				return "FEMALE";
+				
+			case EVERYONE :
+				return "EVERYONE";
+				
+			default :
+				if(! inputLimitChecker(""))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					getGenderInputForAddLeave();
+				}
+				return null;
+		 }
+	}
+	
+	
+	private void addLeaveToExistingEmployees(LeaveType leave, int leaveTypeID)
+	{
+		
+		ArrayList<Employee> employees = EmployeeDBController.getAllEmployee();
+		
+		for(Employee employee : employees)
+		{
+			
+			int unusedLeaveCount = getLeaveCount(leave.getLeaveCount(), Utils.getCurrentDateTime());
+			
+			//while adding new leave, it will return leaveID and need to set for add existing employee
+			leave.setLeaveTypeID(leaveTypeID);
+			addUnusedLeaveForEmployee(leave, unusedLeaveCount, employee.getemployeeID());
+			
+		}
+	}
+	
 	
 	private int getEmployeeRole()
 	{
@@ -386,38 +551,42 @@ public class HRController
 	
 	private String getGenderInput() 
 	{
-
-		String gender;
+		
 		int genderInput = hrView.getGenderInput();
 	
 		switch(genderInput)
 		{
 			case MALE :
-				gender = "MALE";
-				break;
+				return "MALE";
 				
 			case FEMALE :
-				gender = "FEMALE";
-				break;
+				return "FEMALE";
 				
 			case OTHERS :
-				gender = "OTHERS";
-				break;
+				return "OTHERS";
 				
 			default :
-				inputLimit++;
-				if(inputLimit == 3)
+				if(! inputLimitChecker(StringConstant.ADD_EMPLOYEE_FAILED))
 				{
-					inputLimit = 0;
-					Utils.printMessage(StringConstant.ADD_EMPLOYEE_FAILED);
-					return null;
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					getGenderInput();
 				}
-				Utils.printMessage(StringConstant.INVALID_INPUT);
-				return getGenderInput();
-		}
-		return gender;
+		 }
+		 return null;
 	}
 	
+	boolean inputLimitChecker(String message)
+	 {
+		inputLimit++;
+		
+		if(inputLimit == 3)
+		{
+			inputLimit = 0;
+			Utils.printMessage(message);
+			return true;
+		}
+		return false;
+	}
 	
 	private int getReportingID(int teamId, int rolePriority)
 	{
@@ -427,7 +596,7 @@ public class HRController
 		try {
 			if(!result.next())
 			{
-				Utils.NoHigherRoleAvailable();
+				Utils.printNoHigherRoleAvailable();
 				return 1;
 			}
 		} 
@@ -468,8 +637,7 @@ public class HRController
 			return null;
 		}
 		
-		Date date ;
-		Date todayDate = Utils.getTodayDateObject();
+		Date todayDate = Utils.getCurrentDateTime();
 		
 		String joiningDate = hrView.getJoiningDate();
 		
@@ -484,7 +652,7 @@ public class HRController
 		
 		Utils.printSpace();
 		
-		if( EmployeeValidation.isDateValid(joiningDate, todayDate))
+		if( EmployeeValidation.isJoiningDateValid(joiningDate, todayDate))
 		{
 			SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
 			try 
@@ -615,7 +783,7 @@ public class HRController
 		}
 		else
 		{
-			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
 				Utils.printMessage(StringConstant.INVALID_ID);
 				editEmployeeDetails();
@@ -643,7 +811,7 @@ public class HRController
 				return;
 				
 			default :
-				if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+				if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 				{
 					Utils.printMessage(StringConstant.INVALID_INPUT);
 					processEdit(employee);
@@ -681,7 +849,7 @@ public class HRController
 				return;
 				
 			default :
-				if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+				if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 				{
 					Utils.printMessage(StringConstant.INVALID_INPUT);
 					displayEditOption(employee);
@@ -691,20 +859,6 @@ public class HRController
 		
 		employeeView.displayProfile(EmployeeDBController.getEmployee(employee.getemployeeID()));
 		displayEditOption(employee);
-	}
-	
-	
-	boolean inputLimitReached(String message)
-	 {
-		inputLimit++;
-		
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			Utils.printMessage(message);
-			return true;
-		}
-		return false;
 	}
 	
 	
@@ -734,7 +888,7 @@ public class HRController
 		}
 		else
 		{
-			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
 				Utils.printMessage(StringConstant.INVALID_ROLE_ID);
 				editRole(employee);
@@ -775,7 +929,7 @@ public class HRController
 		}
 		else
 		{
-			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
 				Utils.printMessage(StringConstant.INVALID_REPORTING_ID);
 				editReportingID(employeeID);
@@ -793,7 +947,7 @@ public class HRController
 		{
 			if(!result.next()) 	 //return true if resultSet is Empty
 			{
-				Utils.NoHigherRoleAvailable();
+				Utils.printNoHigherRoleAvailable();
 				return 1;
 			}
 			else
@@ -804,7 +958,7 @@ public class HRController
 				int userInput = hrView.getReportingID();
 				if(userInput == 0)
 				{
-					if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+					if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 					{
 						Utils.printMessage(StringConstant.INVALID_REPORTING_ID);
 						getNewReportingID(teamID, rolePriority, employeeID);
@@ -833,7 +987,7 @@ public class HRController
 		
 		if(userInput != employee.getWorkLocationID() && WorkLocationDBController.isWorkLocationPresent(userInput))
 		{
-			if(WorkLocationDBController.setLocationID(userInput, employee.getemployeeID()))
+			if(EmployeeDBController.changeEmployeeWorkLocation(userInput, employee.getemployeeID()))
 			{
 				Utils.printMessage(StringConstant.LOCATION_CHANGED);
 				return;
@@ -844,7 +998,7 @@ public class HRController
 			Utils.printMessage(StringConstant.INVALID_LOCATION_ID);			
 		}
 		
-		if(!inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+		if(!inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 		{
 			editLocation(employee);
 		}
@@ -864,7 +1018,7 @@ public class HRController
 		
 		if(EmployeeValidation.isTeamIdPresent(userInput) && userInput !=teamID)
 		{
-			if(TeamDBController.setTeamID(userInput, employee.getemployeeID()))
+			if(EmployeeDBController.changeEmployeeTeam(userInput, employee.getemployeeID()))
 				{
 					editReportingID(employeeID);
 					Utils.printMessage(StringConstant.TEAM_CHANGED);
@@ -873,7 +1027,7 @@ public class HRController
 		}
 		else
 		{
-			if( !inputLimitReached(StringConstant.EDIT_EMPLOYEE_FAILED))
+			if( !inputLimitChecker(StringConstant.EDIT_EMPLOYEE_FAILED))
 			{
 				Utils.printMessage(StringConstant.INVALID_TEAM_ID);
 				editTeam(employee);
@@ -906,7 +1060,7 @@ public class HRController
 				return;
 				
 			default :
-				if( !inputLimitReached(StringConstant.INVALID_INPUT))
+				if( !inputLimitChecker(StringConstant.INVALID_INPUT))
 				{
 					requests();
 				}
@@ -940,7 +1094,7 @@ public class HRController
 		}
 		else
 		{
-			if( !inputLimitReached(StringConstant.CANT_PROCESS_TEAM_CHANGE))
+			if( !inputLimitChecker(StringConstant.CANT_PROCESS_TEAM_CHANGE))
 			{
 				Utils.printMessage(" Enter valid Request ID ");
 				replyRequest();
@@ -965,7 +1119,7 @@ public class HRController
 				return;
 				
 			default :
-				if( !inputLimitReached(StringConstant.CANT_PROCESS_TEAM_CHANGE))
+				if( !inputLimitChecker(StringConstant.CANT_PROCESS_TEAM_CHANGE))
 				{
 					Utils.printMessage(StringConstant.INVALID_INPUT);
 					handleRequest(request);
@@ -978,25 +1132,42 @@ public class HRController
 		
 		Employee employee = EmployeeDBController.getEmployee(request.getRequestBy());
 		
-		int notificationID = NotificationDBController.getNotificationID(request.getRequestID(), request.getRequestBy());
+		int requestByNotificationID = NotificationDBController.getNotificationID(request.getRequestID(), request.getRequestBy());
+		int reportingToNotificationID = NotificationDBController.getNotificationID(request.getRequestID(), request.getReceiverID());
 
+		
 		if(isTeamchanged(employee, request.getTeamID()))
 		{
-			String notification = " TC"+request.getRequestID()+ " - your team changed successful";
-			changeNotification(notificationID, notification, false);
+			
+			String notificationForRequestedPerson = " TC"+request.getRequestID()+ " - your team changed successful";
+			String notificationForReportingId = " TC"+request.getRequestID() + " - Team changed for "+employee.getemployeeName();
+			
+			//change notification for requested person
+			changeNotification(requestByNotificationID, notificationForRequestedPerson, false);
+			
+			//change notification for reporting ID 
+			changeNotification(reportingToNotificationID, notificationForReportingId, false);
+			
 			RequestDBController.deleteRequest(request.getRequestID());
 		}
 		else
 		{
-			String notification = " TC"+request.getRequestID()+ " - Can't change your Team, contact your Team Head. ";
-			changeNotification(notificationID, notification, false);
+			
+			String notificationForRequestedPerson = " TC"+request.getRequestID()+ " - Can't change your Team, contact your Team Head. ";
+			String notificationForReportingId = " TC"+request.getRequestID() + " - can't change team, due to technical issue";
+			
+			//change notification for requested person
+			changeNotification(requestByNotificationID, notificationForRequestedPerson, false);
+			
+			//change notification for reporting ID 
+			changeNotification(reportingToNotificationID, notificationForReportingId, false);
 		}
 	}
 	
 	private boolean isTeamchanged(Employee employee, int newTeamID)
 	{
 		
-		if(TeamDBController.setTeamID(newTeamID, employee.getemployeeID()))
+		if(EmployeeDBController.changeEmployeeTeam(newTeamID, employee.getemployeeID()))
 		{
 			editReportingID(employee.getemployeeID());
 			Utils.printMessage(StringConstant.TEAM_CHANGED);
@@ -1005,7 +1176,6 @@ public class HRController
 		
 		return false;
 	}
-	
 	
 	
 	private void changeNotification(int notificationID, String notification, boolean isMessageSeen)

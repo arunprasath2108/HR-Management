@@ -28,6 +28,8 @@ public class StringConstant
 	public static final String MAIL_ADDED_SUCCESSFUL = "    ~ Personal Mail added Successfully";
 	public static final String EDUCATION_ADDED_SUCCESSFUL = "   ~ Educational Qualifications added successful";
 	public static final String WORK_ADDED_SUCCESSFUL = "    ~ Work Experience added Successfully";
+	public static final String LEAVE_ADDED_SUCCESSFUL = "    ~ New Leave Type added Successfully";
+
 
 
 	
@@ -47,6 +49,14 @@ public class StringConstant
 	public static final String EDIT_PERSONAL_INFO_FAILED = "  Failed to Edit Personal Info Details!";
 	public static final String CANT_CHANGE_TEAM = "    Can't change your Team ";
 	public static final String CANT_PROCESS_TEAM_CHANGE = "    Can't process Team Change Request ! ";
+	public static final String FAILED_TO_ADD_LEAVE = "   Failed to add new Leave Type";
+	public static final String INVALID_LEAVE_ID = "   Invalid Leave ID";
+	public static final String CANT_APPLY_LEAVE = "   Failed to apply leave";
+	public static final String ENTER_VALID_LEAVE_ID = "   Please, enter a valid leave ID";
+
+
+
+
 
 
 	
@@ -63,6 +73,11 @@ public class StringConstant
 	public static final String REQUEST_FORWARDED_TO_HR = " Request Accepted and forwarded to HR Team ";
 	public static final String REQUEST_REJECTED = " Request Rejected ";
 	public static final String NO_REQUESTS = "      No Requests !";
+	public static final String MALE = "male";
+	public static final String FEMALE = "female";
+	public static final String PENDING = "pending";
+
+
 	
 
 

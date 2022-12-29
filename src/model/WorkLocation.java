@@ -22,18 +22,7 @@ public class WorkLocation
 	}
 	
 	
-		
-	//setters
 	
-	public void setLocationID(int id)
-	{
-		locationID = id;
-	}
-	
-	public void setLocationName(String name)
-	{
-		locationName = name;
-	}
 	
 	
 	//getters

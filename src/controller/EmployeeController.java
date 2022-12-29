@@ -1,5 +1,6 @@
 package controller;
 
+import java.sql.ResultSet;
 import java.util.*;
 import dbController.*;
 import model.*;
@@ -18,7 +19,8 @@ public class EmployeeController
 	private static final int EDIT_PERSONAL_INFO = 2;
 	private static final int APPLY_LEAVE = 3;
 	private static final int VIEW_LEAVE_REQUEST = 4;
-	private static final int LOG_OUT = 5;
+	private static final int NOTIFICATION = 5;
+	private static final int LOG_OUT = 6;
 	
 	
 	private static final int EDIT_MOBILE_NUM = 1;
@@ -35,6 +37,9 @@ public class EmployeeController
 	
 	private static final int CONFIRM = 1;
 	private static final int BACK = 2;
+	
+	private static final int APPLY = 1;
+
 
 	
 	
@@ -55,7 +60,7 @@ public class EmployeeController
 		EmployeeValidation.isProfileIncomplete(userID);
 		
 		employeeView.listEmployeeMenu(userID);
-		System.out.println(" 5. LogOut.");
+		System.out.println(" 6. LogOut.");
 		Utils.printSpace();
 		Utils.printMessage(StringConstant.ENTER_OPTION);
 		
@@ -97,11 +102,11 @@ public class EmployeeController
 				return false;
 				
 			case APPLY_LEAVE:
-				//for apply leave
+				applyLeave(employee);
 				return false;
 				
 			case VIEW_LEAVE_REQUEST:
-				//view leave request
+				displayLeaveReport(employee.getemployeeID());
 				return false;
 				
 			case LOG_OUT :
@@ -222,18 +227,6 @@ public class EmployeeController
 			}
 		}
 	}
-	
-	boolean inputLimitChecker(String message)
-	{
-		inputLimit++;
-		if(inputLimit == 3)
-		{
-			inputLimit = 0;
-			Utils.printMessage(message);
-			return true;
-		}
-		return false;
-	}
 
 
 	private void editAddress(int employeeID)
@@ -306,7 +299,7 @@ public class EmployeeController
 	public String getPassedOutYear()
 	{
 		
-		String passedOut = employeeView.passedOutYear();
+		String passedOut = employeeView.getPassedOutYear();
 		
 		if(EmployeeValidation.isPassedOutYearValid(passedOut))
 		{
@@ -445,85 +438,195 @@ public class EmployeeController
 
 	}
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-
-
+	private void applyLeave(Employee employee)
+	{
 		
+		int userInput = employeeView.getInputForApplyLeave();
+		
+		switch(userInput)
+		{
+			case BACK :
+				return;
+				
+			case APPLY :
+				break;
+				
+			default :
+				if( !inputLimitChecker(StringConstant.CANT_APPLY_LEAVE))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					applyLeave(employee);
+				}
+				return;
+		}
+		
+		displayLeave(employee.getemployeeID());
+		
+		int leaveTypeID = employeeView.getLeaveID();
+		
+		LeaveBalance leaveBalance = LeaveBalanceDBController.getLeaveBalance(leaveTypeID, employee.getemployeeID());
+		if(leaveBalance == null)
+		{
+			if( !inputLimitChecker(StringConstant.CANT_APPLY_LEAVE))
+			{
+				Utils.printMessage(StringConstant.INVALID_LEAVE_ID);
+				applyLeave(employee);
+			}
+			return;
+		}
+		
+		if(leaveBalance.getUnusedLeave() == 0)
+		{
+			if( !inputLimitChecker(StringConstant.CANT_APPLY_LEAVE))
+			{
+				Utils.printMessage("  you have utilized all days in this leave category\n");
+				applyLeave(employee);
+			}
+			return;
+		}
+		
+		Utils.printMessage(" From Date : ");
+		Date fromDate = getDateForApplyLeave();
+		if(fromDate == null) { return; }
+		
+		Utils.printMessage(" To Date : ");
+		Date toDate = getDateForApplyLeave();
+		if(toDate == null) { return; }
+		
+		int numberOfDaysApplied = (int) Utils.getDifferenceBetweenTwoDates(toDate, fromDate);
+		
+		//for one day leave, it return 0 -> so, numberOfDaysApplied++;
+		numberOfDaysApplied++;
 
-//	private static void editWorkExperience(Employee employee)
-//	{
-//		
-//		System.out.println(" Enter Company Name : ");
-//		String companyName = Utils.getStringInput();
-//		Utils.printSpace();
-//		
-//		System.out.println(" Name of the Role : ");
-//		String role = Utils.getStringInput();
-//		Utils.printSpace();
-//		
-//		String timePeriod = getYearsOfExperience();
-//		Utils.printSpace();
-//		
-//		String WorkExperience = companyName+" - "+role+" - "+timePeriod+" years";
-//		employee.setWorkExperience(WorkExperience);
-//		
-//		System.out.println("   ~ Work Experience added Successful");
-//		editPersonalInfo(employee);
-//		
-//
-//	}
-//	
-//	
-//	private static String getYearsOfExperience()
-//	{
-//		
-//		Utils.printSpace();
-//		System.out.println("  * Number of years you have worked : ");
-//		System.out.println("  * Minimum ~ 1 year || Maximum ~ 20 year ");
-//		Utils.printSpace();
-//		System.out.println("  NOTE : Experience less than 1 Year, Enter as -> 0");
-//		Utils.printSpace();
-//		
-//		String userInput = Utils.getStringInput();
-//		Utils.printSpace();
-//		
-//		if( EmployeeValidation.isExperienceYearValid(userInput))
-//		{
-//			if( userInput.equalsIgnoreCase("0"))
-//			{
-//				return "less than 1";
-//			}
-//			return userInput;
-//		}
-//		else
-//		{
-//			return getYearsOfExperience();
-//		}
-//		
-//	}
+		if(numberOfDaysApplied < 0)
+		{
+			Utils.printMessage("  Invalid Date Input");
+			return;
+		}
 
+		//difference b/w unused leave & appliedDays
+		if((leaveBalance.getUnusedLeave() - (numberOfDaysApplied)) >= 0)
+		{
+			 
+			String reasonForLeave = employeeView.getReasonForLeave();
+			LeaveManagement leaveManagement = new LeaveManagement(employee.getemployeeID(), employee.getReportingToID(),leaveTypeID,
+																			 fromDate, toDate, reasonForLeave, "pending");
+			
+			autoApproveLeave(leaveManagement);
+			sendLeaveRequest(leaveManagement, leaveBalance, numberOfDaysApplied);
+		}
+		else
+		{
+			Utils.printMessage("  The Days you have applied are more than your Available leave count");
+		}
+	}
+	
+	private void sendLeaveRequest(LeaveManagement leave, LeaveBalance leaveBalance, int numberOfDaysApplied)
+	{
+		
+		if(LeaveManagementDBController.setLeaveRequest(leave))
+		{
+			LeaveBalanceDBController.changeLeaveBalance(leaveBalance.getLeaveTypeID(), leave.getRequestBy(), (leaveBalance.getUnusedLeave()-numberOfDaysApplied));
+			setNotification(leave.getRequestBy(), " Your leave applied successful", false);
+			Utils.printMessage("    Leave Applied Successful");
+		}
+		else
+		{
+			Utils.printMessage("  Can't apply for leave");
+		}
+	}
+	
+	private void autoApproveLeave(LeaveManagement leaveManagement)
+	{
+		
+		Date toDate = leaveManagement.getToDate();
+		Date todayDate = Utils.getCurrentDateTime();
+		
+		if(toDate.compareTo(todayDate) < 0)     //return < 0, today's date comes after than toDate
+		{
+			leaveManagement.setStatus("approved");
+			setNotification(leaveManagement.getRequestBy(), " Your leave approved successful", false);
+		}
+	}
+	
+	private Date getDateForApplyLeave()
+	{
+		
+		String date = employeeView.getDateForApplyLeave();
+		
+		if( !EmployeeValidation.isDateFormatValid(date))
+		{
+			
+			if( !inputLimitChecker(StringConstant.CANT_APPLY_LEAVE))
+			{
+				Utils.printMessage("  Invalid Date format");
+				getDateForApplyLeave();
+			}
+			return null;
+		}
+		else
+		{
+			return Utils.convertStringIntoDate(date);
+		}
+	}
+	
+	
+	
+	boolean inputLimitChecker(String message)
+	{
+		inputLimit++;
+		if(inputLimit == 3)
+		{
+			inputLimit = 0;
+			Utils.printMessage(message);
+			return true;
+		}
+		return false;
+	}
+	
+	
+	private void displayLeave(int employeeID)
+	{
+		
+		ResultSet result = LeaveBalanceDBController.getAvailableLeave(employeeID);
+		
+		//jack
+		employeeView.displayAvailableLeave(result);
+	}
+	
+	
+	
+	private void displayLeaveReport(int employeeID)
+	{
+		
+		ArrayList<LeaveManagement> leaveReport = LeaveManagementDBController.getLeaveReport(employeeID);
+		
+		if(leaveReport.size() == 0)
+		{
+			Utils.printMessage("   No Leave has been applied");
+			return;
+		}
+		
+		employeeView.printLeaveReport(leaveReport);
+	}
 
 	
+	public void setNotification(int employeeID, String message, boolean isMessageSeen)
+	{
+		if( !NotificationDBController.setNotification(employeeID, message, isMessageSeen))
+		{
+			Utils.printMessage("  Error in sending Notification !!!");
+		}
+	}
 	
 	
-	
-	
-	
-
+	public void changeNotification(int notificationID, String notification, boolean setMessageNotSeen)
+	{
+		
+		if( !NotificationDBController.changeNotification(notificationID, notification, setMessageNotSeen))
+		{
+			Utils.printMessage(" Can't change Notification ! ");
+		}
+		
+	}
 }

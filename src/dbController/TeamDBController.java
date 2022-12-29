@@ -136,32 +136,7 @@ public class TeamDBController
 			return null;
 		}
 	}
-	
-	public static int isEmployeeInTeam(int teamID, int userInput)
-	{
-		int id = 0;
-		String query = DBConstant.SELECT + DBConstant.ID +" "
-						+ DBConstant.FROM + DBConstant.EMPLOYEE_TABLE  + " "
-						+ DBConstant.WHERE + DBConstant.TEAM_ID + " = " + teamID + DBConstant.AND +" " + DBConstant.ID +" = " + userInput ;
-		
-		try 
-		{
-			statement = DBConnector.getConnection().prepareStatement(query);
-			ResultSet result = statement.executeQuery();
-			
-			while(result.next())
-			{
-				return result.getInt(DBConstant.ID);
-			}
-		} 
-		catch (SQLException e) 
-		{
-			e.printStackTrace();
-			System.out.println("  Error in verify Employee is Present in team or not ");
-			
-		}
-		return id;
-	}
+
 	
 	public static String getTeamName(int teamID)
 	{
@@ -184,28 +159,7 @@ public class TeamDBController
 			System.out.println(" Error occured in getting Team Name !");
 		}
 		return null;
-	}
-	
-
-	public static boolean setTeamID(int teamID, int employeeID)
-	{
-		
-		String query = DBConstant.UPDATE + DBConstant.EMPLOYEE_TABLE +" "+ DBConstant.SET 
-						+ DBConstant.TEAM_ID +" = "+teamID + DBConstant.WHERE + DBConstant.ID + " = "+employeeID;
-		
-		try 
-		{
-			statement = DBConnector.getConnection().prepareStatement(query);
-			return (statement.executeUpdate() == 1);
-		} 
-		catch (SQLException e) 
-		{
-			System.out.println(" Error occured in setting Team ID !");
-		}
-		return false;
-	}
-	
-	
+	}	
 	
 
 	

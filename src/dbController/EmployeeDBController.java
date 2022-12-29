@@ -83,6 +83,33 @@ public class EmployeeDBController
 		return false;
 	}
 	
+	public static int isEmployeeInTeam(int teamID, int employeeID)
+	{
+		int id = 0;
+		String query = DBConstant.SELECT + DBConstant.ID +" "
+						+ DBConstant.FROM + DBConstant.EMPLOYEE_TABLE  + " "
+						+ DBConstant.WHERE + DBConstant.TEAM_ID + " = " + teamID + DBConstant.AND +" " + DBConstant.ID +" = " + employeeID ;
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next())
+			{
+				return result.getInt(DBConstant.ID);
+			}
+		} 
+		catch (SQLException e) 
+		{
+			e.printStackTrace();
+			System.out.println("  Error in verify Employee is Present in team or not ");
+			
+		}
+		return id;
+	}
+	
+	
 	public static ResultSet getReportingID(int userTeamID, int rolePriority)
 	{
 		
@@ -239,6 +266,40 @@ public class EmployeeDBController
 		return null;
 	}
 	
+	public static ArrayList<Employee> getAllEmployee()
+	{
+		
+		ArrayList<Employee>  employees = new ArrayList<Employee>();
+		Employee employee;
+		String query = DBConstant.SELECT + " * "+ DBConstant.FROM + DBConstant.EMPLOYEE_TABLE ;
+
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			ResultSet result = statement.executeQuery();
+			
+			while(result.next())
+			{
+
+				employee = new Employee(result.getInt(DBConstant.ID),result.getString(DBConstant.NAME),
+										result.getInt(DBConstant.ROLE_ID), result.getInt(DBConstant.REPORTING_ID),
+										result.getInt(DBConstant.TEAM_ID), result.getString(DBConstant.COMPANY_MAIL),
+										result.getDate(DBConstant.DOJ), result.getInt(DBConstant.WORK_LOCATION),
+										result.getString(DBConstant.GENDER));
+				
+				employees.add(employee);
+				
+			}
+			return employees;
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in getting all Employees !");
+		}
+		
+		return null;
+	}
+	
 	public static  ResultSet getTeamDetails(int teamID)
 	{
 		
@@ -279,6 +340,44 @@ public class EmployeeDBController
 		}
 		return false;
 	}
+	
+	public static boolean changeEmployeeTeam(int teamID, int employeeID)
+	{
+		
+		String query = DBConstant.UPDATE + DBConstant.EMPLOYEE_TABLE +" "+ DBConstant.SET 
+						+ DBConstant.TEAM_ID +" = "+teamID + DBConstant.WHERE + DBConstant.ID + " = "+employeeID;
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);
+			return (statement.executeUpdate() == 1);
+		} 
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in setting Team ID !");
+		}
+		return false;
+	}
+	
+	public static boolean changeEmployeeWorkLocation(int locationID, int employeeID)
+	{
+		
+		String query = DBConstant.UPDATE + DBConstant.EMPLOYEE_TABLE +" "+ DBConstant.SET 
+						+ DBConstant.WORK_LOCATION +" = "+locationID + DBConstant.WHERE + DBConstant.ID + " = "+employeeID;
+		
+		try 
+		{
+			statement = DBConnector.getConnection().prepareStatement(query);			
+			return (statement.executeUpdate() != 0);
+		} 
+		
+		catch (SQLException e) 
+		{
+			System.out.println(" Error occured in setting location!");
+		}
+		return false;
+	}
+	
 	
 	public static ArrayList<Employee> getReportee(int employeeID)
 	{

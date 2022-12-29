@@ -3,7 +3,6 @@ package dbController;
 import java.sql.*;
 import java.util.*;
 import model.Notification;
-import utils.StringConstant;
 import utils.Utils;
 
 public class NotificationDBController
@@ -35,6 +34,7 @@ public class NotificationDBController
 	}
 	
 	
+	//to change notification status
 	public static int getNotificationID(int requestID, int requestedBy)
 	{
 		
@@ -86,7 +86,8 @@ public class NotificationDBController
 		
 	}
 	
-	public static int notificationCount(int employeeID)
+	
+	public static int getNotificationCount(int employeeID)
 	{
 		
 		int count = 0;
@@ -116,12 +117,14 @@ public class NotificationDBController
 		return count;
 	}
 	
+	
 	public static ArrayList<Notification>  getNotification(int employeeID)
 	{
 		
 		ArrayList<Notification> notifications = new ArrayList<>();
+		
 		String query = DBConstant.SELECT + " * " + DBConstant.FROM + DBConstant.NOTIFICATION_TABLE + " "
-						+ DBConstant.WHERE + DBConstant.EMPLOYEE_ID + " = " + employeeID;
+						+ DBConstant.WHERE + DBConstant.EMPLOYEE_ID + " = " + employeeID + " " + DBConstant.ORDER_BY + DBConstant.NOTIFICATION_ID + " " + DBConstant.DESC;
 		
 		try
 		{

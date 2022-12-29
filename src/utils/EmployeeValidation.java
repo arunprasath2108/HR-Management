@@ -2,11 +2,11 @@ package utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import dbController.*;
-import model.Employee;
 
 public class EmployeeValidation
 {
@@ -33,7 +33,7 @@ public class EmployeeValidation
 	public static boolean isEmployeeInTeam(int teamID, int employeeID)
 	{
 		
-		return (TeamDBController.isEmployeeInTeam(teamID, employeeID) == employeeID );
+		return (EmployeeDBController.isEmployeeInTeam(teamID, employeeID) == employeeID );
 	}
 	
 	public static boolean isRoleIdPresent(int roleID)
@@ -54,7 +54,7 @@ public class EmployeeValidation
 		return RoleDBController.isRolePriorityPresent(input);
 	}
 	
-	public static boolean isDateValid(String date1, Date date2)
+	public static boolean isJoiningDateValid(String date1, Date date2)
 	{
 		
 		SimpleDateFormat simpleDateformat = new SimpleDateFormat("dd/MM/yyyy");
@@ -64,12 +64,10 @@ public class EmployeeValidation
 		try
 		{
 			joiningDate = simpleDateformat.parse(date1);
-
-            long diff = todayDate.getTime() - joiningDate.getTime();
-
-            long diffDays = diff / (24 * 60 * 60 * 1000);
-
-            return (diffDays >=0 && diffDays <7);
+			
+			long differenceInDays = Utils.getDifferenceBetweenTwoDates(todayDate, joiningDate);
+			
+            return (differenceInDays >=0 && differenceInDays <7);
         } 
 		catch (ParseException e) 
 		{
@@ -77,6 +75,9 @@ public class EmployeeValidation
         }
 		return false;
 	}
+	
+	
+	
 	
 	public static boolean isNameValid(String name) 
 	{
@@ -128,7 +129,7 @@ public class EmployeeValidation
 	public static boolean isEmailValid(String mailID)
 	{
 		
-		Pattern pattern = Pattern.compile("(^[a-z]{1,})(\\.?)([a-z0-9]{2,64})@{1}([a-z0-9]{2,10})\\.{1}[a-z0-9]{2,5}(\\.?)([a-z]{2,10})?");
+		Pattern pattern = Pattern.compile("(^[a-z]{1,})(\\.?)([a-z0-9]{1,64})@{1}([a-z0-9]{2,10})\\.{1}[a-z0-9]{2,5}(\\.?)([a-z]{2,10})?");
 		Matcher matcher = pattern.matcher(mailID);
 		
 		while(matcher.find())
@@ -180,13 +181,14 @@ public class EmployeeValidation
 		
 	}
 	
+	
 	public static boolean isPassedOutYearValid(String year)
 	{
 		
 		try
 		{
-			int passOut = Integer.parseInt(year);
-			return ( passOut >= 1985 && passOut <=2025);
+			int passOut = Integer.parseInt(year);       //year is valid only for current year or +2 year
+			return ( passOut >= 1985 && passOut <= Calendar.getInstance().get(Calendar.YEAR)+2);
 		}
 		catch(NumberFormatException e)
 		{

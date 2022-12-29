@@ -52,7 +52,7 @@ public class SeniorEmployeeController extends EmployeeController
 	
 	private int isNotificationAvailable(int employeeID)
 	{
-		return NotificationDBController.notificationCount(employeeID);
+		return NotificationDBController.getNotificationCount(employeeID);
 	}
 	
 	public int requestCountForEmployee(int employeeID)
@@ -125,7 +125,7 @@ public class SeniorEmployeeController extends EmployeeController
 				break;
 			
 			case APPROVE_LEAVE :  
-//					System.out.println("apply leave");
+				processLeave(employeeID);
 				break;
 				
 			case REQUEST_TEAM_CHANGE :	
@@ -137,7 +137,7 @@ public class SeniorEmployeeController extends EmployeeController
 				break;
 			
 			case NOTIFICATION :
-				notification(employeeID);
+				viewNotification(employeeID);
 				break;
 				
 			case LOG_OUT :
@@ -255,14 +255,6 @@ public class SeniorEmployeeController extends EmployeeController
 		}
 	}
 	
-	private void setNotification(int employeeID, String message, boolean isMessageSeen)
-	{
-		if( !NotificationDBController.setNotification(employeeID, message, isMessageSeen))
-		{
-			Utils.printMessage("  Error in sending Notification !!!");
-		}
-	}
-	
 	
 	private void requestMessages(int employeeID)
 	{
@@ -277,8 +269,25 @@ public class SeniorEmployeeController extends EmployeeController
 			return;
 		}
 		
-		seniorEmployeeView.displayRequests(requests);
-		replyRequest(employeeID);
+		int checker = 0;
+		for(Request request : requests)
+		{
+			if(request.getStatus().equalsIgnoreCase(StringConstant.PENDING))
+			{
+				checker = 1;
+				seniorEmployeeView.displayRequests(requests);
+				break;
+			}
+		}
+		
+		if(checker == 1)
+		{
+			replyRequest(employeeID);
+		}
+		else
+		{
+			Utils.printMessage(StringConstant.NO_REQUESTS);
+		}
 	
 	}
 	
@@ -320,7 +329,7 @@ public class SeniorEmployeeController extends EmployeeController
 			requests.add(request);
 			
 			seniorEmployeeView.displayRequests(requests);
-			handleRequest(requestID, request.getRequestBy());
+			handleRequest(requestID, request.getRequestBy(), employeeID);
 		}
 		else
 		{
@@ -333,7 +342,7 @@ public class SeniorEmployeeController extends EmployeeController
 		
 	}
 	
-	private void handleRequest(int requestID, int requestedBy)
+	private void handleRequest(int requestID, int requestedBy, int employeeID)
 	{
 		
 		int decision = seniorEmployeeView.getRequestDecisionInput();
@@ -341,11 +350,11 @@ public class SeniorEmployeeController extends EmployeeController
 		switch(decision)
 		{
 			case ACCEPT :
-				acceptRequest(requestID, requestedBy);
+				acceptRequest(requestID, requestedBy, employeeID);
 				break;
 				
 			case REJECT :
-				rejectRequest(requestID, requestedBy);
+				rejectRequest(requestID, requestedBy, employeeID);
 				break;
 				
 			case BACK_MENU :
@@ -355,12 +364,12 @@ public class SeniorEmployeeController extends EmployeeController
 				if( !inputLimitReached(StringConstant.CANT_PROCESS_TEAM_CHANGE))
 				{
 					Utils.printMessage(StringConstant.INVALID_INPUT);
-					handleRequest(requestID, requestedBy);
+					handleRequest(requestID, requestedBy, employeeID);
 				}
 		}
 	}
 	
-	private void acceptRequest(int requestID, int requestedBy)
+	private void acceptRequest(int requestID, int requestedBy, int employeeID)
 	{
 		
 		if(RequestDBController.acceptRequest(requestID, "Waiting for HR Approval"))
@@ -368,7 +377,13 @@ public class SeniorEmployeeController extends EmployeeController
 			
 			int notificationID = NotificationDBController.getNotificationID(requestID, requestedBy);
 			String notification = " TC"+requestID+ " - " + StringConstant.REQUEST_FORWARDED_TO_HR;
+			
+			//change notification for request by employee
 			changeNotification(notificationID, notification, false);
+			
+			//add notification for employee who process request
+			setNotification(employeeID, notification, false);
+			
 			Utils.printMessage(StringConstant.REQUEST_FORWARDED_TO_HR);
 		}
 		else
@@ -378,25 +393,22 @@ public class SeniorEmployeeController extends EmployeeController
 		
 	}
 	
-	private void changeNotification(int notificationID, String notification, boolean setMessageNotSeen)
-	{
-		
-		if( !NotificationDBController.changeNotification(notificationID, notification, setMessageNotSeen))
-		{
-			Utils.printMessage(" Can't change Notification ! ");
-		}
-		
-	}
 	
 	
-	private void rejectRequest(int requestID, int requestedBy)
+	private void rejectRequest(int requestID, int requestedBy, int employeeID)
 	{
 		
 		if(RequestDBController.rejectRequest(requestID))
 		{
 			int notificationID = NotificationDBController.getNotificationID(requestID, requestedBy);
 			String notification = " TC"+requestID+ " - " + StringConstant.REQUEST_REJECTED;
+			
+			//change notification for request by employee
 			changeNotification(notificationID, notification, false);
+			
+			//add notification for employee who process request
+			setNotification(employeeID, notification, false);
+			
 			RequestDBController.deleteRequest(requestID);
 			Utils.printMessage("   TC" + requestID + " - " + StringConstant.REQUEST_REJECTED + " !\n");
 		}
@@ -407,7 +419,7 @@ public class SeniorEmployeeController extends EmployeeController
 	}
 	
 	
-	private void notification(int employeeID)
+	private void viewNotification(int employeeID)
 	{
 		
 		ArrayList<Notification> notifications = NotificationDBController.getNotification(employeeID);
@@ -425,6 +437,134 @@ public class SeniorEmployeeController extends EmployeeController
 	}
 	
 	
+	private void processLeave(int employeeID)
+	{
+		
+		ArrayList<LeaveManagement> leaveReport = LeaveManagementDBController.getLeaveRequests(employeeID);
+		
+		if(leaveReport.size() == 0)
+		{
+			Utils.printMessage("  No Leave requests !!");
+			return;
+		}
+		
+		seniorEmployeeView.printLeaveRequest(leaveReport);
+		
+		int leaveID = seniorEmployeeView.getLeaveID();
+		
+		//jack
+//		for(LeaveManagement leave : leaveReport)
+//		{
+//			if( leave.getleaveID() == leaveID)
+//			{
+//				if( !inputLimitReached(StringConstant.ENTER_VALID_LEAVE_ID))
+//				{
+//					Utils.printMessage(StringConstant.INVALID_LEAVE_ID);
+//					processLeave(employeeID);
+//				}
+//				return;
+//			}
+//		}
+		
+		LeaveManagement leaveRequest = LeaveManagementDBController.returnLeaveReportIfLeaveIdPresent(leaveID, employeeID);
+		
+		if(leaveRequest == null)
+		{
+			if( !inputLimitReached(StringConstant.ENTER_VALID_LEAVE_ID))
+			{
+				Utils.printMessage(StringConstant.INVALID_LEAVE_ID);
+				processLeave(employeeID);
+			}
+			return;
+		}
+		
+		leaveReport.removeAll(leaveReport);
+		leaveReport.add(leaveRequest);
+		seniorEmployeeView.printLeaveRequest(leaveReport);
+		proceedLeaveRequest(leaveRequest);
+
+	}
+	
+	private void proceedLeaveRequest(LeaveManagement leaveRequest)
+	{
+		
+		int decision = seniorEmployeeView.getRequestDecisionInput();
+		
+		switch(decision)
+		{
+			case ACCEPT :
+				approveLeave(leaveRequest);
+				break;
+				
+			case REJECT :
+				rejectLeave(leaveRequest);
+				break;
+				
+			case BACK_MENU :
+				return;
+				
+			default :
+				if( !inputLimitReached("  Can't approve / reject leave request"))
+				{
+					Utils.printMessage(StringConstant.INVALID_INPUT);
+					proceedLeaveRequest(leaveRequest);
+				}
+		}
+	}
+	
+	private void approveLeave(LeaveManagement leaveRequest)
+	{
+		
+		if(LeaveManagementDBController.approveOrRejectLeave(leaveRequest.getleaveID(), "approved", null))
+		{
+			
+			Utils.printMessage("   Leave request accepted");
+		}
+		else
+		{
+			Utils.printMessage("   Can't accept leave request");
+		}
+	}
+	
+	private void rejectLeave(LeaveManagement leaveRequest)
+	{
+		
+		String reasonForReject = seniorEmployeeView.getReasonForReject();
+		if(LeaveManagementDBController.approveOrRejectLeave(leaveRequest.getleaveID(), "rejected", reasonForReject))
+		{
+			changeLeaveBalanceForRejectedLeave(leaveRequest);
+			Utils.printMessage("   Rejected leave request");
+		}
+		else
+		{
+			Utils.printMessage("   Can't reject leave request");
+		}
+	}
+	
+	
+	
+	
+	private void changeLeaveBalanceForRejectedLeave(LeaveManagement leaveRequest)
+	{
+		
+		Date fromDate = leaveRequest.getfromDate();
+		Date toDate = leaveRequest.getToDate();
+		
+		int numberOfDaysApplied = (int) Utils.getDifferenceBetweenTwoDates(toDate, fromDate);
+		
+		//for one day leave, it return 0 -> so, numberOfDaysApplied++;
+		numberOfDaysApplied++;
+		
+		LeaveBalance leave = LeaveBalanceDBController.getLeaveBalance(leaveRequest.getLeaveTypeID(), leaveRequest.getRequestBy());
+		
+		int addRejectedDaysToUnusedLeave = leave.getUnusedLeave() + numberOfDaysApplied;
+		
+		if( !LeaveBalanceDBController.changeLeaveBalance(leaveRequest.getLeaveTypeID(), leaveRequest.getRequestBy(), addRejectedDaysToUnusedLeave))
+		{
+			Utils.printMessage("  can't add back leave count for rejected leave ");
+		}
+	}
+
 	boolean inputLimitReached(String message)
 	{
 		
@@ -438,415 +578,5 @@ public class SeniorEmployeeController extends EmployeeController
 		}
 		return false;
 	}
-
-	
-//	private  void processInbox(Employee employee)
-//	{
-//		int requestedID, checker = 0, senderID;
-//		System.out.println(" Choose Index number.");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			
-//			int userInput = Utils.getIntInput();
-//			userInput--;
-//			Utils.printSpace();
-//			
-//			for( String messages : employee.getRequests())
-//			{
-//				
-//				if(messages.indexOf(messages) == userInput)
-//				{
-//					checker = 1;
-//					String[] splitMessage = messages.split("-");
-//					senderID = Integer.parseInt(splitMessage[0]); 
-//					requestedID = Integer.parseInt(splitMessage[2]);
-//					 
-//					proceedMessage(employee, userInput, requestedID, senderID, messages );
-//					break;
-//				}
-//			}
-//			
-//			if(checker == 0)
-//			{
-//				System.out.println(" Please, Enter a Valid Index Number. ");
-//				Utils.printSpace();
-//				processInbox(employee);
-//				return;
-//				
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			processInbox(employee);
-//			return;
-//			
-//		}
-//	}
-//
-//
-//	private  void proceedMessage(Employee employee, int indexOfMessage, int requestID, int senderId, String message) 
-//	{
-//		
-//		try
-//		{
-//			System.out.println(" Choose a option :");
-//			Utils.printSpace();
-//			System.out.println(" 1. Change Team");
-//			System.out.println(" 2. Back.");
-//			Utils.printSpace();
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			switch(userInput)
-//			{
-//				case PROCESS_REQUEST :
-//					processRequest(employee, message, requestID, senderId, indexOfMessage );
-//					break;
-//					
-//				case IGNORE_MESSAGE :
-//					break;
-//					
-//					default :
-//						Utils.printInvalidInputMessage();
-//						requestMessages(employee);
-//						return;
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			requestMessages(employee);
-//			return;
-//		}	
-//		
-//	}
-//
-//	
-//	private void processRequest(Employee employee, String message, int requestID, int senderId , int indexOfMessage )
-//	{
-//		
-//		String[] getTeamName = message.split("-");
-//		String teamName = getTeamName[3];
-//		editTeamName(requestID, teamName, employee);
-//		employee.getRequests().remove(indexOfMessage);
-//		
-//		//get sender employee object
-//		Employee sender = Utils.getEmployeeObject(senderId);
-//		//get requester employee object
-//		Employee requestBy = Utils.getEmployeeObject(requestID);
-//		String requesterName = Utils.getEmployeeName(requestID);
-//		
-//		sender.setNotificationSeen(false);
-//		String messageSender = " ~ Team changed Successfully for \""+requesterName.toUpperCase()+"\"    "+Utils.getCurrentDateTime();
-//		sender.getNotification().replace(requestBy.getemployeeID(), messageSender );
-//		
-//		requestBy.setNotificationSeen(false);
-//		String messageRequester = " ~ Your Team changed Successfully to ["+teamName+"]       "+Utils.getCurrentDateTime();
-//		requestBy.getNotification().replace(requestBy.getemployeeID(), messageRequester);
-//		requestBy.setTeamChanged(false);
-//		
-//	}
-//	private  void replyRequestMessages(Employee employee) 
-//	{
-//		
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			
-//			System.out.println(" 1. Reply.");
-//			System.out.println(" 2. Back.");
-//			Utils.printSpace();
-//			System.out.println(" Choose a option.");
-//			Utils.printSpace();
-//			int userInput = Utils.getIntInput();
-//			Utils.printSpace();
-//			
-//			switch(userInput)
-//			{
-//				
-//				case REPLY :
-//					processMessage(employee);
-//					break;
-//					
-//				case BACK :
-//					break;
-//					
-//				default :
-//					Utils.printInvalidInputMessage();
-//					replyRequestMessages(employee);
-//					 return;
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			replyRequestMessages(employee);
-//			return;
-//		}
-//		
-//		
-//	}
-//	
-//	
-//	private  void processMessage(Employee employee)
-//	{
-//		
-//		Utils.printSpace();
-//		System.out.println(" Choose Index number to Reply.");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			int userInput = Utils.getIntInput();
-//			userInput--;     //matches userInput with index of ArrayList index
-//			
-//			if(userInput < 0)
-//			{
-//				processMessage(employee);
-//				return;
-//			}
-//			Utils.printSpace();
-//			
-//			for ( String message : employee.getRequests())
-//			{
-//					if( message.indexOf(message) == userInput)
-//					{
-//						confirmMessageBeforeReply(message, employee, userInput);	
-//						break;
-//					}
-//					else
-//					{
-//						Utils.printInvalidInputMessage();
-//						processMessage(employee);
-//						return;
-//					}
-//				
-//			}
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			processMessage(employee);
-//			return;
-//		}
-//		
-//		
-//	}
-//
-//
-//	private  void confirmMessageBeforeReply( String message, Employee employee, int userInput)
-//	{
-//		
-//		String[] splitMessage = message.split("-");
-//		int senderID = Integer.parseInt(splitMessage[0]);  
-//		String senderName = Utils.getEmployeeName(senderID);  
-//		String requestMessage = splitMessage[1];	
-//		String teamName = splitMessage[3];
-//		
-//		
-//		Utils.printLine();
-//		System.out.println("  From : "+senderName);
-//		Utils.printSpace();
-//		System.out.println("      "+requestMessage+" ["+teamName+"] ");
-//		
-//		Utils.printSpace();
-//		Utils.printLine();
-//		Utils.printSpace();
-//		Utils.printSpace();
-//		
-//		System.out.println(" 1. Proceed to HR.");
-//		System.out.println(" 2. Reject.");
-//		Utils.printSpace();
-//		
-//		try
-//		{
-//			int input = Utils.getIntInput();
-//			
-//			switch( input )
-//			{
-//				
-//				case PROCEED_TO_HR :
-//					forwardRequestToHR(message, employee);
-//					employee.getRequests().remove(userInput);
-//					break;
-//					
-//				case REJECT :
-//					rejectRequest(employee, message);
-//					employee.getRequests().remove(userInput);
-//					break;
-//					
-//				default :
-//					Utils.printInvalidInputMessage();
-//					processMessage(employee);
-//					return;
-//					
-//			}
-//			
-//			
-//		}
-//		catch(InputMismatchException e)
-//		{
-//			Utils.printInvalidInputMessage();
-//			Utils.scanner.nextLine();
-//			processMessage(employee);
-//			return;
-//		}
-//		
-//	}
-//
-//	
-//	private  void rejectRequest(Employee employee, String message) 
-//	{
-//		
-//		String[] splitMessage = message.split("-");
-//		int receiverID = Integer.parseInt(splitMessage[0]);  
-//		
-//		for( Employee employeee : Resource.employees)
-//		{
-//			
-//			if(employeee.getemployeeID() == receiverID)
-//			{
-//				String notification = " ~ Contact your Team Head for Further Reference about Team Change    "+Utils.getCurrentDateTime();
-//				employeee.getNotification().replace(receiverID, notification);
-//				Utils.printSpace();
-//				employeee.setTeamChanged(false);
-//				employeee.setNotificationSeen(false);
-//				System.out.println("      ~ Message Sent !!");
-//				Utils.printSpace();
-//				break;
-//			}
-//			
-//		}
-//
-//		
-//	}
-//
-//
-//	private void forwardRequestToHR(String message, Employee  sender) 
-//	{
-//		
-//		int senderID = sender.getemployeeID();
-//		String[] splitMessage = message.split("-");
-//		int requestedPerson = Integer.parseInt(splitMessage[2]);
-//		String requestPersonName = Utils.getEmployeeName(requestedPerson);
-//		
-//		//changing sender ID. 
-//		splitMessage[0] = Integer.toString(senderID);
-//		
-//		StringBuilder requestMessage = new StringBuilder();
-//		
-//		for( String msg : splitMessage)
-//		{
-//			requestMessage.append(msg);
-//			requestMessage.append("-");
-//		}
-//		requestMessage.append(Utils.getCurrentDateTime());
-//		
-//		//forward message to HR
-//		for( Employee employee : Resource.employees)
-//		{
-//			if(employee.getemployeeRole() == Role.HR)
-//			{
-//				employee.getRequests().add(requestMessage.toString());
-//				Utils.printSpace();
-//				System.out.println("     ~ Request sent to HR");
-//				Utils.printSpace();
-//				
-//				//notify the sender about this request.
-//				String notification = " ~ Waiting for HR Acceptance for \""+requestPersonName.toUpperCase()+"\" Team Change      "+Utils.getCurrentDateTime();
-//				sender.getNotification().put(requestedPerson, notification);
-//				sender.setNotificationSeen(false);
-//				break;
-//			}
-//		}
-//		
-//		//send notification to requested employee about the process.
-//		sendNotificationToRequestPerson(requestedPerson);
-//
-//	}
-//	
-//	private void sendNotificationToRequestPerson(int requestedPerson)
-//	{
-//		
-//		for( Employee senderEmployee : Resource.employees)
-//		{
-//			if(senderEmployee.getemployeeID() == requestedPerson)
-//			{
-//				String notification = "  ~ Your Team Change Request waiting for HR Approval      "+Utils.getCurrentDateTime();
-//				senderEmployee.getNotification().replace(requestedPerson, notification);
-//				senderEmployee.setNotificationSeen(false);
-//				Utils.printSpace();
-//				break;
-//			}
-//		}
-//	}
-//	
-//	public  void requestMessages(Employee employee)
-//	{
-//		
-//		//condition to check MTS cannot Accept/reject team change request.
-//		if(employee.getemployeeRole().getValue() == Role.MTS.getValue())
-//		{
-//			Utils.printSpace();
-//			System.out.println(" You don't have access to Approve / Reject Team Change.");
-//			Utils.printSpace();
-//			return;
-//		}
-//		
-//		if(employee.getRequests().isEmpty())
-//		{
-//			Utils.printSpace();
-//			System.out.println("  ~ No Requests !");
-//			Utils.printSpace();
-//			return;
-//		}
-//		
-//		Utils.printSpace();
-//		printRequestMessages(employee);
-//		
-//		Utils.printSpace();
-//		replyRequestMessages(employee);
-//		
-//	}
-
-//	private void printNotification(Employee employee)
-//	{
-//		
-//		if(employee.getNotification().isEmpty())
-//		{
-//			System.out.println("    No Messages..!");
-//			Utils.printSpace();
-//		}
-//		
-//		employee.setNotificationSeen(true);
-//		for( Entry<Integer, String> messages : employee.getNotification().entrySet())
-//		{
-//			System.out.println(" "+messages.getValue());
-//			Utils.printSpace();
-//		}
-//		
-//	}
-
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	
 }

@@ -3,9 +3,7 @@ package utils;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import dbController.*;
@@ -47,7 +45,7 @@ public class Utils
 	 
 	 public static void printLine()
 	 {
-		 System.out.println(" ------------------------------------------");
+		 System.out.println(" ----------------------------------------------------");
 	 }
 	 
 	 public static void printWelcomeMessage(int userID)
@@ -57,22 +55,6 @@ public class Utils
 			Utils.printLine();
 	 }
 	
-	 public static Date getTodayDateObject()
-	 {
-		 
-	     SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
-		 Date todayDate;
-		try 
-		{
-			todayDate = simpleDateFormat.parse(simpleDateFormat.format(new Date()));
-			return todayDate;
-		} 
-		catch (ParseException e)
-		{
-			System.out.println("  Error in Today date getting method");
-		}
-		return null;
-	 }
 	 
 	 //for joining date display
 	 public static String getTodayDate()
@@ -82,20 +64,64 @@ public class Utils
 		   return dtf.format(now);
 	 }
 	 
+	 
 	 public static Date getCurrentDateTime()
 	 {
 		 return new Date();
 	 }
 	 
-//	 public static String getCurrentDateAndTime()
-//	 {
-//		 LocalDateTime now = LocalDateTime.now();  
-//	     DateTimeFormatter format = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");  
-//	     String formatDateTime = now.format(format);  
-//	     return formatDateTime;
-//	     
-//	 }
+	 
+	public static long getDifferenceBetweenTwoDates(Date date1, Date date2)
+	{
+		
+		long diff = date1.getTime() - date2.getTime();
 
+        long diffDays = diff / (24 * 60 * 60 * 1000);
+        
+		return diffDays;
+		
+	}
+	
+	public static Date convertStringIntoDate(String dateString)
+	{
+		
+		try 
+		{
+			SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+			return dateFormat.parse(dateString);
+		} 
+		catch (ParseException e) 
+		{
+			e.printStackTrace();
+			Utils.printMessage("  Can't convert String into Date format");
+		}
+		return null;
+	}
+	
+	public static Date convertStringToDate(String dateString)
+	{
+		
+		try 
+		{
+			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+			return dateFormat.parse(dateString);
+		} 
+		catch (ParseException e) 
+		{
+			e.printStackTrace();
+			Utils.printMessage("  Can't convert String to Date format");
+		}
+		return null;
+	}
+	 
+	public static String convertDateIntoAnotherDateFormat(Date date)
+	{
+		
+		SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy");
+	    return dateFormat.format(date);  
+	}
+	 
+	 //in adding new Role and Team
 	 public static void printErrorMessageInAdd()
 	 {
 	     printSpace();
@@ -104,7 +130,7 @@ public class Utils
 		 printSpace();
 		 
 	 }
-	 public static void NoHigherRoleAvailable()
+	 public static void printNoHigherRoleAvailable()
 	 {
 		 System.out.println("  You have prefered Higher Role...\n");
 		 System.out.println("  So, this Role has automatically  set default Reporting to -> CEO\n");
@@ -123,115 +149,6 @@ public class Utils
 
 		return employeeWorkExperience;
 	}
-	 
-	
-	 
-	 
-
-    
-    
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-	 
-//	 public static void printHeader()
-//	 {
-//		 	Utils.printSpace();
-//			System.out.println(" FEATURES :");
-//	 }
-//
-//
-
-//	
-//	
-//	 public static void printTeamAddedSuccessful()
-//	 {
-//	 	 printSpace();
-//	  	 System.out.println(" Successfully added a Team. ");
-//		 printSpace();
-//	 }
-//	 
-//	
-//	public static int printRequestCount(Employee employee) 
-//	{
-//		
-//		return employee.getRequests().size();
-//		
-//	}
-//	
-//	
-//	public static String getTeamName(int id)
-//	{
-//		
-//		for( Entry<Integer, String> entries : Resource.teamMap.entrySet())
-//		{
-//			if(entries.getKey() == (Integer)id)
-//			{
-//				
-//				return (String) entries.getValue();
-//			}
-//		}
-//		
-//		return null;
-//		
-//	}
-//	
-//	
-//	public static Employee getEmployeeObject( int id)
-//	{
-//		
-//		for(Employee employee : Resource.employees)
-//		{
-//			if(employee.getemployeeID() == id)
-//			{
-//				return employee;
-//			}
-//		}
-//		return null;
-//		
-//	}
-//	
-//	
-//	public static String getEmployeeName(int id)
-//	{
-//		
-//		for(Employee employee : Resource.employees)
-//		{
-//			if(employee.getemployeeID() == id)
-//			{
-//				return employee.getemployeeName();
-//			}
-//		}
-//		
-//		return null;
-//		
-//	}
-//
-//	
-//	public static String getCurrentDateTime()
-//	{
-//		Date date = new Date();
-//		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy   HH:mm");
-//		String todayDate = simpleDateFormat.format(date);
-//		return  todayDate;
-//	}
-//
-
 
 	 
 

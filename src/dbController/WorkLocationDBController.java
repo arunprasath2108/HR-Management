@@ -140,23 +140,5 @@ public class WorkLocationDBController
 	}
 
 	
-	public static boolean setLocationID(int locationID, int employeeID)
-	{
-		
-		String query = DBConstant.UPDATE + DBConstant.EMPLOYEE_TABLE +" "+ DBConstant.SET 
-						+ DBConstant.WORK_LOCATION +" = "+locationID + DBConstant.WHERE + DBConstant.ID + " = "+employeeID;
-		
-		try 
-		{
-			statement = DBConnector.getConnection().prepareStatement(query);			
-			return (statement.executeUpdate() != 0);
-		} 
-		
-		catch (SQLException e) 
-		{
-			System.out.println(" Error occured in setting location!");
-		}
-		return false;
-	}
 
 }

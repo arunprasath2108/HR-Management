@@ -75,6 +75,31 @@ public class DBConstant
 	public static final String FALSE = "False";
 	
 	
+	//Leave Management Table Constants
+	public static final String LEAVE_MANAGEMENT_TABLE = "Leave_Management";
+	public static final String LEAVE_ID = "Leave_ID";
+	public static final String FROM_DATE = "From_date";
+	public static final String TO_DATE = "To_date";
+	public static final String REASON_FOR_LEAVE = "Reason_for_leave";
+	public static final String REJECTED_REASON = "Rejected_Reason";
+	//leave_type_id, 
+	
+	
+	//Taken Leave Table Constants
+	public static final String LEAVE_BAlANCE_TABLE = "Leave_Balance";
+	public static final String TAKEN_LEAVE_ID = "Taken_Leave_ID";
+	public static final String TOTAL_LEAVE = "Total_Leave";
+	public static final String UNUSED_LEAVE = "Unused_Leave";
+	
+	
+	//Leave Types Table Constants
+	public static final String LEAVE_TYPE_TABLE = "Leave_Type";
+	public static final String LEAVE_TYPE_ID = "Leave_type_ID";
+	public static final String LEAVE_NAME = "Leave_Name";
+	public static final String LEAVE_COUNT = "Leave_Count";
+
+	
+	
 	//Query constants
 	public static final String CREATE_TABLE_IF_NOT_EXISTS = "Create table if not exists ";
 	public static final String CREATE_DATABASE = "Create database ";
